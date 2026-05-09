@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lemlib-python"
+version = "0.1.0"
+description = "A Python port of LemLib's motion-control helpers, path format, and documentation examples."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Eric Xyn" }]
+keywords = ["vex", "v5", "robotics", "odometry", "pure-pursuit", "pid"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Education",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Education",
+  "Topic :: Scientific/Engineering"
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = []
+
+[project.urls]
+Homepage = "https://github.com/ericxyn/LemLib-Python"
+Documentation = "https://github.com/ericxyn/LemLib-Python/tree/main/website"
+Source = "https://github.com/ericxyn/LemLib-Python"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+lemlib = ["py.typed"]
+
