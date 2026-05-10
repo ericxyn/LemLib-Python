@@ -18,6 +18,7 @@ from .paths import Path, Waypoint, convert_lemlib_to_python, parse_lemlib_path
 from .pid import Gains, PID
 from .utils import (
     AngularDirection,
+    DriveOutputs,
     SlewDirection,
     angle_error,
     avg,
@@ -25,6 +26,7 @@ from .utils import (
     deg_to_rad,
     desaturate,
     ema,
+    get_signed_tangent_arc_curvature,
     rad_to_deg,
     sanitize_angle,
     slew,
@@ -35,6 +37,7 @@ __all__ = [
     "Chassis",
     "ControllerSettings",
     "DriveCurve",
+    "DriveOutputs",
     "DriveSignal",
     "Drivetrain",
     "ExitCondition",
@@ -63,9 +66,9 @@ __all__ = [
     "deg_to_rad",
     "desaturate",
     "ema",
+    "get_signed_tangent_arc_curvature",
     "parse_lemlib_path",
     "rad_to_deg",
     "sanitize_angle",
     "slew",
 ]
-

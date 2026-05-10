@@ -261,18 +261,8 @@ chassis.move_to_pose(120, 10, 0)`, "python"),
     id: "api",
     title: "API Reference",
     group: "Reference",
-    blocks: [
-      h("Main API"),
-      list(["Chassis", "TurnToHeadingParams", "TurnToPointParams", "MoveToPointParams", "MoveToPoseParams", "FollowParams", "DriveSignal"]),
-      h("Builder classes"),
-      list(["Drivetrain", "OdomSensors", "TrackingWheel", "Omniwheel", "ControllerSettings", "ExitCondition", "DriveCurve", "ExpoDriveCurve"]),
-      h("Odometry"),
-      list(["Pose", "Vector2D", "TrackingWheelOdometry"]),
-      h("Utils"),
-      list(["PID", "Gains", "angle_error", "sanitize_angle", "slew", "desaturate", "avg", "ema"]),
-      h("Path tools"),
-      list(["Waypoint", "Path", "parse_lemlib_path", "convert_lemlib_to_python"]),
-    ],
+    blocks: apiReferenceBlocks(),
+
   },
   {
     id: "converter",
@@ -305,6 +295,303 @@ function callout(kind, title, text) {
 
 function tutorial(title, id, blocks) {
   return { id, title, group: "Tutorials", blocks };
+}
+
+function apiReferenceBlocks() {
+  return [
+    p("This reference mirrors LemLib's API layout while documenting the Python package surface. Python names use snake_case first; camelCase aliases are listed where the port provides them for teams moving C++ snippets over gradually."),
+    apiIndex([
+      {
+        title: "Main API",
+        items: [
+          "Chassis",
+          "DriveSignal",
+          "TurnToHeadingParams",
+          "TurnToPointParams",
+          "SwingParams",
+          "MoveToPointParams",
+          "MoveToPoseParams",
+          "FollowParams",
+        ],
+      },
+      {
+        title: "Builder Classes",
+        items: [
+          "Drivetrain",
+          "OdomSensors",
+          "Omniwheel",
+          "ControllerSettings",
+          "ExitCondition",
+          "DriveCurve",
+          "ExpoDriveCurve",
+        ],
+      },
+      {
+        title: "Odometry and Geometry",
+        items: ["Vector2D", "Pose", "TrackingWheel", "TrackingWheelOdometry"],
+      },
+      {
+        title: "Paths",
+        items: ["Waypoint", "Path", "parse_lemlib_path", "convert_lemlib_to_python"],
+      },
+      {
+        title: "PID and Utils",
+        items: [
+          "Gains",
+          "PID",
+          "AngularDirection",
+          "SlewDirection",
+          "DriveOutputs",
+          "deg_to_rad",
+          "rad_to_deg",
+          "sanitize_angle",
+          "angle_error",
+          "slew",
+          "constrain_power",
+          "desaturate",
+          "get_signed_tangent_arc_curvature",
+          "avg",
+          "ema",
+        ],
+      },
+    ]),
+    h("Main API"),
+    apiEntry(
+      "Chassis",
+      "Chassis(drivetrain, lateral_settings, angular_settings, sensors=None, throttle_curve=None, steer_curve=None, pose=None)",
+      "Hardware-agnostic tank-drive facade for driver control, odometry pose storage, and autonomous motion calculations.",
+      [
+        apiMember("calibrate(calibrate_imu=True)", "Resets the lateral and angular PID controllers."),
+        apiMember("set_pose(pose_or_x, y=None, theta=None)", "Stores the current pose. Accepts a Pose instance or x, y, theta values."),
+        apiMember("get_pose() -> Pose", "Returns the current robot pose."),
+        apiMember("tank(left, right, curve=True) -> DriveSignal", "Applies tank-drive outputs, optionally through the throttle curve."),
+        apiMember("arcade(throttle, steer, reverse=False, steer_priority=0.5) -> DriveSignal", "Mixes throttle and steering into left/right outputs."),
+        apiMember("curvature(throttle, curve, reverse=False) -> DriveSignal", "Curvature-drive helper where turn output scales with throttle magnitude."),
+        apiMember("turn_to_heading(heading, timeout=None, params=None, dt=0.01) -> DriveSignal", "Calculates an angular PID step toward an absolute heading."),
+        apiMember("turn_to_point(x, y, timeout=None, params=None, dt=0.01) -> DriveSignal", "Turns toward a field coordinate."),
+        apiMember("swing_to_heading(heading, timeout=None, params=None, dt=0.01) -> DriveSignal", "Turns while locking one drivetrain side."),
+        apiMember("swing_to_point(x, y, timeout=None, params=None, dt=0.01) -> DriveSignal", "Swing-turns toward a field coordinate."),
+        apiMember("move_to_point(x, y, timeout=None, params=None, dt=0.01) -> DriveSignal", "Runs a lateral and angular control step toward a point."),
+        apiMember("move_to_pose(x, y, theta, timeout=None, params=None, dt=0.01) -> DriveSignal", "Runs the boomerang-style pose motion calculation."),
+        apiMember("follow(path, lookahead_distance, timeout=None, params=None, dt=0.01) -> DriveSignal", "Follows a LemLib path or parsed Path using pure-pursuit lookahead."),
+        apiMember("cancel_motion()", "Stops the current motion by braking the drivetrain adapters."),
+        apiMember("cancel_all_motions()", "Compatibility wrapper around cancel_motion()."),
+        apiMember("is_in_motion() -> bool", "Returns whether the last commanded signal is non-zero."),
+        apiMember("brake()", "Calls brake() on motor adapters that provide it and clears last_signal."),
+      ],
+      ["setPose", "getPose", "turnToHeading", "turnToPoint", "swingToHeading", "swingToPoint", "moveToPoint", "moveToPose", "cancelMotion", "cancelAllMotions", "isInMotion"],
+    ),
+    apiEntry(
+      "DriveSignal",
+      "DriveSignal(left: float, right: float, lateral: float = 0.0, angular: float = 0.0)",
+      "Return value for drivetrain commands. Left and right are motor outputs; lateral and angular keep the mixed controller components available for logging or simulation.",
+    ),
+    h("Movement Options"),
+    apiEntry(
+      "TurnToHeadingParams",
+      "TurnToHeadingParams(max_speed=127.0, min_speed=0.0, slew=0.0, early_exit_range=0.0)",
+      "Options for absolute heading turns.",
+    ),
+    apiEntry(
+      "TurnToPointParams",
+      "TurnToPointParams(max_speed=127.0, min_speed=0.0, slew=0.0, early_exit_range=0.0, forwards=True)",
+      "Turn-to-point options. Set forwards to False when the robot should face the target with its back side.",
+    ),
+    apiEntry(
+      "SwingParams",
+      "SwingParams(max_speed=127.0, min_speed=0.0, slew=0.0, early_exit_range=0.0, locked_side='left')",
+      "Swing-turn options. locked_side may be 'left' or 'right'.",
+    ),
+    apiEntry(
+      "MoveToPointParams",
+      "MoveToPointParams(forwards=True, max_lateral_speed=127.0, min_lateral_speed=0.0, max_angular_speed=127.0, lateral_slew=0.0, angular_slew=0.0, early_exit_range=0.0)",
+      "Options for point-to-point lateral motion.",
+    ),
+    apiEntry(
+      "MoveToPoseParams",
+      "MoveToPoseParams(..., lead=0.6, horizontal_drift=None)",
+      "Extends MoveToPointParams with boomerang lead and optional horizontal drift limiting.",
+    ),
+    apiEntry(
+      "FollowParams",
+      "FollowParams(forwards=True, lateral_slew=0.0)",
+      "Options for pure-pursuit path following.",
+    ),
+    h("Builder Classes"),
+    apiEntry(
+      "Drivetrain",
+      "Drivetrain(left_motors=None, right_motors=None, track_width=0.0, wheel_diameter=Omniwheel.NEW_4, rpm=360.0, horizontal_drift=2.0)",
+      "Stores tank-drive geometry and hardware adapters.",
+      [apiMember("wheel_size -> float", "Property returning the wheel diameter as a plain float.")],
+    ),
+    apiEntry(
+      "OdomSensors",
+      "OdomSensors(vertical_1=None, vertical_2=None, horizontal_1=None, horizontal_2=None, imu=None)",
+      "Container for tracking-wheel and IMU adapters.",
+    ),
+    apiEntry(
+      "Omniwheel",
+      "Enum: NEW_2, NEW_275, OLD_275, NEW_275_HALF, OLD_275_HALF, NEW_325, OLD_325, NEW_325_HALF, OLD_325_HALF, NEW_4, OLD_4, NEW_4_HALF, OLD_4_HALF",
+      "Wheel diameter presets matching LemLib's common VEX omniwheel constants.",
+    ),
+    apiEntry(
+      "ControllerSettings",
+      "ControllerSettings(kp, ki, kd, windup_range=0.0, small_error=0.0, small_timeout=0.0, large_error=0.0, large_timeout=0.0, slew=0.0)",
+      "PID and exit-condition configuration for chassis controllers.",
+      [apiMember("create_pid() -> PID", "Builds a PID controller with sign-flip reset enabled.")],
+    ),
+    apiEntry(
+      "ExitCondition",
+      "ExitCondition(small_error=0.0, small_timeout=0.0, large_error=0.0, large_timeout=0.0)",
+      "Tracks small-error and large-error settling windows.",
+      [
+        apiMember("from_settings(settings) -> ExitCondition", "Creates an exit condition from ControllerSettings timeouts."),
+        apiMember("update(error, dt) -> bool", "Returns True when either settling window has elapsed."),
+        apiMember("reset()", "Clears elapsed settling timers."),
+      ],
+    ),
+    apiEntry(
+      "DriveCurve",
+      "DriveCurve().curve(value: float) -> float",
+      "Base driver-control curve. The default curve returns the input unchanged and is callable.",
+    ),
+    apiEntry(
+      "ExpoDriveCurve",
+      "ExpoDriveCurve(deadband=3.0, minimum_output=10.0, curve_gain=1.019, maximum_input=127.0)",
+      "Exponential joystick curve with a deadband and minimum output.",
+      [apiMember("curve(value) -> float", "Returns the curved driver-control value.")],
+    ),
+    h("Odometry"),
+    apiEntry(
+      "Vector2D",
+      "Vector2D(x=0.0, y=0.0)",
+      "2D point or displacement in field units.",
+      [
+        apiMember("distance_to(other) -> float", "Euclidean distance to another vector."),
+        apiMember("angle_to(other) -> float", "Heading in degrees where 0 points along +Y."),
+        apiMember("rotated_by(theta) -> Vector2D", "Rotates using robot-heading convention."),
+        apiMember("from_polar(theta, radius) -> Vector2D", "Class method for heading/radius construction."),
+      ],
+    ),
+    apiEntry(
+      "Pose",
+      "Pose(x=0.0, y=0.0, theta=0.0)",
+      "Robot pose with position and heading.",
+      [
+        apiMember("orientation -> float", "Property alias for theta."),
+        apiMember("with_heading(theta) -> Pose", "Returns the same position with a new heading."),
+        apiMember("translated(delta) -> Pose", "Returns a pose shifted by a Vector2D."),
+        apiMember("as_vector() -> Vector2D", "Returns the x/y component as a vector."),
+      ],
+    ),
+    apiEntry(
+      "TrackingWheel",
+      "TrackingWheel(diameter: float, offset: float, ratio: float = 1.0, last_total: float = 0.0)",
+      "Converts encoder degrees into tracking-wheel travel.",
+      [
+        apiMember("distance_from_degrees(degrees) -> float", "Converts encoder degrees to linear distance."),
+        apiMember("distance_delta(total_degrees) -> float", "Returns travel since the previous total and stores the new total."),
+        apiMember("reset()", "Resets the stored wheel total."),
+      ],
+    ),
+    apiEntry(
+      "TrackingWheelOdometry",
+      "TrackingWheelOdometry(pose=None)",
+      "Tracking-wheel odometry update math.",
+      [
+        apiMember("get_pose() -> Pose", "Returns the current pose."),
+        apiMember("set_pose(pose)", "Stores a pose."),
+        apiMember("update(vertical_delta, horizontal_delta, heading, vertical_offset=0.0, horizontal_offset=0.0) -> Pose", "Applies one odometry update and returns the new pose."),
+      ],
+      ["getPose", "setPose"],
+    ),
+    h("Path Tools"),
+    apiEntry(
+      "Waypoint",
+      "Waypoint(x: float, y: float, speed: float)",
+      "One point from a path.jerryio LemLib v0.5 export.",
+    ),
+    apiEntry(
+      "Path",
+      "Path(list[Waypoint])",
+      "List-like path object with export helpers.",
+      [
+        apiMember("to_lemlib() -> str", "Serializes to LemLib path text ending with endData."),
+        apiMember("to_python(variable_name='path') -> str", "Serializes to importable Python code."),
+        apiMember("to_json() -> str", "Serializes waypoints as formatted JSON."),
+      ],
+    ),
+    apiEntry(
+      "parse_lemlib_path",
+      "parse_lemlib_path(text: str) -> Path",
+      "Parses path.jerryio's LemLib v0.5 text export.",
+    ),
+    apiEntry(
+      "convert_lemlib_to_python",
+      "convert_lemlib_to_python(text: str, variable_name: str = 'path') -> str",
+      "Converts LemLib path text directly into Python Path and Waypoint code.",
+    ),
+    h("PID"),
+    apiEntry(
+      "Gains",
+      "Gains(kp=0.0, ki=0.0, kd=0.0)",
+      "PID gain container.",
+    ),
+    apiEntry(
+      "PID",
+      "PID(kp: float | Gains, ki=0.0, kd=0.0, windup_range=0.0, sign_flip_reset=False)",
+      "PID controller compatible with LemLib's control style.",
+      [
+        apiMember("get_gains() -> Gains", "Returns a copy of the current gains."),
+        apiMember("set_gains(gains)", "Replaces PID gains."),
+        apiMember("update(error, dt=None) -> float", "Calculates the next controller output."),
+        apiMember("reset()", "Clears previous error, integral, and timing state."),
+        apiMember("set_sign_flip_reset(value)", "Toggles integral reset when error sign changes."),
+        apiMember("get_sign_flip_reset() -> bool", "Returns the sign-flip reset setting."),
+        apiMember("set_windup_range(value)", "Sets the integral windup range."),
+        apiMember("get_windup_range() -> float", "Returns the integral windup range."),
+      ],
+      ["getGains", "setGains", "setSignFlipReset", "getSignFlipReset", "setWindupRange", "getWindupRange"],
+    ),
+    h("Utils"),
+    apiEntry(
+      "AngularDirection",
+      "Enum: CW_CLOCKWISE='cw', CCW_COUNTERCLOCKWISE='ccw'",
+      "Optional direction constraint for angle_error().",
+    ),
+    apiEntry(
+      "SlewDirection",
+      "Enum: INCREASING='increasing', DECREASING='decreasing', ALL='all'",
+      "Optional direction constraint for slew().",
+    ),
+    apiEntry(
+      "DriveOutputs",
+      "DriveOutputs(left: float, right: float)",
+      "Normalized left/right output pair returned by desaturate().",
+    ),
+    apiEntry("deg_to_rad", "deg_to_rad(deg: float) -> float", "Converts degrees to radians."),
+    apiEntry("rad_to_deg", "rad_to_deg(rad: float) -> float", "Converts radians to degrees."),
+    apiEntry("sanitize_angle", "sanitize_angle(angle: float) -> float", "Wraps an angle to [0, 360)."),
+    apiEntry("angle_error", "angle_error(target: float, position: float, direction: AngularDirection | None = None) -> float", "Returns target-position heading error in degrees."),
+    apiEntry("slew", "slew(target: float, current: float, max_change_rate: float, delta_time: float = 1.0, direction_limit: SlewDirection = SlewDirection.ALL) -> float", "Constrains value change over time."),
+    apiEntry("constrain_power", "constrain_power(power: float, maximum: float, minimum: float = 0) -> float", "Applies signed minimum and absolute maximum output limits."),
+    apiEntry("desaturate", "desaturate(lateral_output: float, angular_output: float) -> DriveOutputs", "Combines lateral and angular outputs into normalized left/right outputs."),
+    apiEntry("get_signed_tangent_arc_curvature", "get_signed_tangent_arc_curvature(start: Pose, end: Vector2D) -> float", "Returns the signed curvature of an arc tangent to a starting pose and ending at a point."),
+    apiEntry("avg", "avg(*values: float) -> float", "Returns the arithmetic mean. A single iterable is accepted."),
+    apiEntry("ema", "ema(previous: float, current: float, alpha: float) -> float", "Returns an exponential moving average."),
+  ];
+}
+
+function apiIndex(sections) {
+  return { type: "api-index", sections };
+}
+
+function apiEntry(name, signature, description, members = [], aliases = []) {
+  return { type: "api-entry", name, signature, description, members, aliases };
+}
+
+function apiMember(name, text) {
+  return { name, text };
 }
 
 function getInitialPage() {
@@ -387,9 +674,28 @@ function App() {
         {(active.blocks || [])
           .filter((block) => block.type === "h")
           .map((block) => (
-            <a key={block.text} href={`#${slug(block.text)}`}>{block.text}</a>
+            <a
+              key={block.text}
+              href={`#${slug(block.text)}`}
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToSection(slug(block.text));
+              }}
+            >
+              {block.text}
+            </a>
           ))}
-        {active.converter && <a href="#converter">Converter</a>}
+        {active.converter && (
+          <a
+            href="#converter"
+            onClick={(event) => {
+              event.preventDefault();
+              scrollToSection("converter");
+            }}
+          >
+            Converter
+          </a>
+        )}
       </aside>
     </div>
   );
@@ -414,6 +720,61 @@ function Blocks({ blocks }) {
             <ul key={index} className="api-list">
               {block.items.map((item) => <li key={item}><code>{item}</code></li>)}
             </ul>
+          );
+        }
+        if (block.type === "api-index") {
+          return (
+            <div className="reference-index" key={index}>
+              {block.sections.map((section) => (
+                <section key={section.title}>
+                  <h3>{section.title}</h3>
+                  <ul>
+                    {section.items.map((item) => (
+                      <li key={item}>
+                        <a
+                          href={`#${slug(item)}`}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            scrollToSection(slug(item));
+                          }}
+                        >
+                          {item}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          );
+        }
+        if (block.type === "api-entry") {
+          return (
+            <section className="api-member" id={slug(block.name)} key={block.name}>
+              <h3><code>{block.name}</code></h3>
+              <pre className="api-signature"><code>{block.signature}</code></pre>
+              <p>{block.description}</p>
+              {block.members.length > 0 && (
+                <dl className="api-detail-list">
+                  {block.members.map((member) => (
+                    <React.Fragment key={member.name}>
+                      <dt><code>{member.name}</code></dt>
+                      <dd>{member.text}</dd>
+                    </React.Fragment>
+                  ))}
+                </dl>
+              )}
+              {block.aliases.length > 0 && (
+                <p className="api-aliases">
+                  <strong>Aliases:</strong>{" "}
+                  {block.aliases.map((alias, aliasIndex) => (
+                    <React.Fragment key={alias}>
+                      <code>{alias}</code>{aliasIndex < block.aliases.length - 1 ? " " : ""}
+                    </React.Fragment>
+                  ))}
+                </p>
+              )}
+            </section>
           );
         }
         if (block.type === "callout") {
@@ -512,6 +873,10 @@ function groupPages(items) {
 
 function slug(value) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function scrollToSection(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 createRoot(document.getElementById("root")).render(<App />);

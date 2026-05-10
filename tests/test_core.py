@@ -10,6 +10,7 @@ from lemlib import (
     PID,
     Pose,
     angle_error,
+    get_signed_tangent_arc_curvature,
     parse_lemlib_path,
     slew,
 )
@@ -26,6 +27,12 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(slew(20, 0, 10, 1), 10)
         self.assertEqual(slew(5, 0, 10, 1), 5)
         self.assertEqual(slew(-20, 0, 10, 0.5), -5)
+
+    def test_curvature_helper_is_top_level_api(self):
+        self.assertAlmostEqual(
+            get_signed_tangent_arc_curvature(Pose(0, 0, 0), Pose(12, 12, 0)),
+            -1 / 12,
+        )
 
     def test_pid_uses_integral_and_derivative(self):
         pid = PID(2, 0.5, 1)
