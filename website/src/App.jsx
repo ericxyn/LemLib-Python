@@ -20,15 +20,15 @@ const pages = [
       p("Welcome to the documentation for LemLib Python. This site contains everything you need to use or contribute to the Python recreation of LemLib."),
       p("If you are new, start with the introductory tutorials. If you already know what you are doing, jump to the API reference or the LemLib path converter."),
       callout("note", "Port status", "This is an initial hardware-agnostic Python port. The math, path format, and control surfaces are available now; real robot projects should provide motor and sensor adapters for their runtime."),
-      code(`from lemlib import Chassis, ControllerSettings, Drivetrain, OdomSensors, Pose
+      code(`from lemlib import chassis, controller_settings, drivetrain, odom_sensors, pose
 
-drivetrain = Drivetrain(track_width=10, wheel_diameter=4, rpm=360)
-lateral = ControllerSettings(10, 0, 3, 3, 1, 100, 3, 500, 20)
-angular = ControllerSettings(2, 0, 10, 3, 1, 100, 3, 500, 0)
+drive = drivetrain(track_width=10, wheel_diameter=4, rpm=360)
+lateral = controller_settings(10, 0, 3, 3, 1, 100, 3, 500, 20)
+angular = controller_settings(2, 0, 10, 3, 1, 100, 3, 500, 0)
 
-chassis = Chassis(drivetrain, lateral, angular, OdomSensors())
-chassis.set_pose(Pose(0, 0, 0))
-print(chassis.move_to_point(0, 48))`, "python"),
+robot = chassis(drive, lateral, angular, odom_sensors())
+robot.set_pose(pose(0, 0, 0))
+print(robot.move_to_point(0, 48))`, "python"),
     ],
   },
   {
@@ -37,7 +37,7 @@ print(chassis.move_to_point(0, 48))`, "python"),
     group: "Home",
     blocks: [
       p("LemLib Python brings LemLib's autonomous-motion ideas into Python for simulation, education, and Python robotics runtimes."),
-      p("The project keeps LemLib's familiar concepts: poses, drivetrain settings, PID controllers, odometry sensors, driver-control curves, angular motions, lateral motions, pure pursuit, and motion chaining."),
+      p("The project keeps LemLib's familiar concepts: poses, drivetrain settings, pid controllers, odometry sensors, driver-control curves, angular motions, lateral motions, pure pursuit, and motion chaining."),
       p("The package does not assume one hardware platform. Motor groups can be plain callables or objects with move and brake methods, which keeps the core easy to test."),
     ],
   },
@@ -81,8 +81,8 @@ npm run dev`, "bash"),
 .venv\\Scripts\\activate
 python -m pip install -e .`, "bash"),
     h("First import"),
-    p("The Python package uses snake_case first, with camelCase aliases for teams porting C++ snippets."),
-    code(`from lemlib import Chassis, ControllerSettings, Drivetrain, OdomSensors, Pose`, "python"),
+    p("The Python package uses lower_snake_case for public functions and variables."),
+    code(`from lemlib import chassis, controller_settings, drivetrain, odom_sensors, pose`, "python"),
     h("Project shape"),
     p("A normal project has a robot configuration module, an autonomous module, and optional path files exported from path.jerryio."),
     code(`robot/
@@ -91,11 +91,11 @@ python -m pip install -e .`, "bash"),
   paths/
     skills.txt`, "text"),
     h("Next step"),
-    p("Once the package imports, configure your drivetrain, sensors, and PID settings."),
+    p("Once the package imports, configure your drivetrain, sensors, and pid settings."),
   ]),
   tutorial("2 - Configuration", "2_configuration", [
     h("Introduction"),
-    p("Configuration tells LemLib Python what your drivetrain looks like, what sensor sources exist, and which PID settings to use."),
+    p("Configuration tells LemLib Python what your drivetrain looks like, what sensor sources exist, and which pid settings to use."),
     h("Motor adapters"),
     p("Motor groups can be callables or objects with move and brake methods. This lets the same control code run in tests, simulators, or a robot runtime."),
     code(`class MotorGroup:
@@ -108,123 +108,123 @@ python -m pip install -e .`, "bash"),
 
     def brake(self):
         self.history.append(0)`, "python"),
-    h("Drivetrain"),
-    code(`from lemlib import Drivetrain, Omniwheel
+    h("drivetrain"),
+    code(`from lemlib import drivetrain, omniwheel
 
 left_motors = MotorGroup("left")
 right_motors = MotorGroup("right")
 
-drivetrain = Drivetrain(
+drive = drivetrain(
     left_motors=left_motors,
     right_motors=right_motors,
     track_width=10,
-    wheel_diameter=Omniwheel.NEW_4,
+    wheel_diameter=omniwheel.new_4,
     rpm=360,
     horizontal_drift=2,
 )`, "python"),
     h("Odometry sensors"),
-    p("Use OdomSensors to keep the same shape as LemLib. The initial port does not require real hardware objects; pass adapters when your runtime has them."),
-    code(`from lemlib import OdomSensors
+    p("Use odom_sensors to keep the same shape as LemLib. The initial port does not require real hardware objects; pass adapters when your runtime has them."),
+    code(`from lemlib import odom_sensors
 
-sensors = OdomSensors(
+sensors = odom_sensors(
     vertical_1=None,
     vertical_2=None,
     horizontal_1=None,
     horizontal_2=None,
     imu=None,
 )`, "python"),
-    h("PID settings"),
-    code(`from lemlib import ControllerSettings
+    h("pid settings"),
+    code(`from lemlib import controller_settings
 
-lateral_controller = ControllerSettings(10, 0, 3, 3, 1, 100, 3, 500, 20)
-angular_controller = ControllerSettings(2, 0, 10, 3, 1, 100, 3, 500, 0)`, "python"),
-    h("Chassis"),
-    code(`from lemlib import Chassis
+lateral_controller = controller_settings(10, 0, 3, 3, 1, 100, 3, 500, 20)
+angular_controller = controller_settings(2, 0, 10, 3, 1, 100, 3, 500, 0)`, "python"),
+    h("chassis"),
+    code(`from lemlib import chassis
 
-chassis = Chassis(drivetrain, lateral_controller, angular_controller, sensors)
-chassis.calibrate()
-print(chassis.get_pose())`, "python"),
+robot = chassis(drive, lateral_controller, angular_controller, sensors)
+robot.calibrate()
+print(robot.get_pose())`, "python"),
   ]),
   tutorial("3 - Driver Control", "3_driver_control", [
     h("Introduction"),
     p("Driver control maps joystick values to left and right drivetrain outputs. Inputs normally range from -127 to 127."),
     h("Tank drive"),
     code(`def driver_loop(left_y, right_y):
-    chassis.tank(left_y, right_y)`, "python"),
+    robot.tank(left_y, right_y)`, "python"),
     h("Arcade drive"),
     code(`def driver_loop(left_y, right_x):
-    chassis.arcade(left_y, right_x)`, "python"),
+    robot.arcade(left_y, right_x)`, "python"),
     h("Curvature drive"),
     p("Curvature drive uses throttle and a turn curve. It behaves like an arc at speed and feels smoother than simple arcade for many drivers."),
     code(`def driver_loop(left_y, right_x):
-    chassis.curvature(left_y, right_x)`, "python"),
+    robot.curvature(left_y, right_x)`, "python"),
     h("Input scaling"),
-    p("ExpoDriveCurve makes small joystick movements softer while preserving full output near the end of travel."),
-    code(`from lemlib import ExpoDriveCurve
+    p("expo_drive_curve makes small joystick movements softer while preserving full output near the end of travel."),
+    code(`from lemlib import expo_drive_curve
 
-throttle_curve = ExpoDriveCurve(deadband=3, minimum_output=10, curve_gain=1.019)
-steer_curve = ExpoDriveCurve(deadband=3, minimum_output=10, curve_gain=1.019)
+throttle_curve = expo_drive_curve(deadband=3, minimum_output=10, curve_gain=1.019)
+steer_curve = expo_drive_curve(deadband=3, minimum_output=10, curve_gain=1.019)
 
-chassis = Chassis(drivetrain, lateral_controller, angular_controller, sensors, throttle_curve, steer_curve)`, "python"),
+robot = chassis(drive, lateral_controller, angular_controller, sensors, throttle_curve, steer_curve)`, "python"),
   ]),
-  tutorial("4 - PID Tuning", "4_pid_tuning", [
+  tutorial("4 - pid tuning", "4_pid_tuning", [
     h("Introduction"),
-    p("LemLib Python uses one lateral PID and one angular PID. The tuning order is the same as LemLib: start with kP and kD, add kI only when needed, then tune slew and exit conditions."),
-    h("Angular PID"),
-    code(`angular_controller = ControllerSettings(
-    2,  # kP
-    0,  # kI
-    10, # kD
+    p("LemLib Python uses one lateral pid and one angular pid. The tuning order is the same as LemLib: start with kp and kd, add ki only when needed, then tune slew and exit conditions."),
+    h("angular pid"),
+    code(`angular_controller = controller_settings(
+    2,  # kp
+    0,  # ki
+    10, # kd
     3,  # windup range
     1, 100,
     3, 500,
     0,
 )`, "python"),
-    p("Test angular tuning with a heading step. Increase kP until the turn reaches the target quickly, then increase kD until oscillation is controlled."),
-    code(`chassis.set_pose(Pose(0, 0, 0))
-signal = chassis.turn_to_heading(90)
+    p("Test angular tuning with a heading step. Increase kp until the turn reaches the target quickly, then increase kd until oscillation is controlled."),
+    code(`robot.set_pose(pose(0, 0, 0))
+signal = robot.turn_to_heading(90)
 print(signal)`, "python"),
-    h("Lateral PID"),
-    code(`lateral_controller = ControllerSettings(10, 0, 3, 3, 1, 100, 3, 500, 20)
-chassis.set_pose(Pose(0, 0, 0))
-print(chassis.move_to_point(0, 48))`, "python"),
-    h("kI and windup"),
-    p("Use kI only for steady-state error that kP and kD cannot reasonably remove. Keep a windup range so the integral only accumulates near the target."),
+    h("lateral pid"),
+    code(`lateral_controller = controller_settings(10, 0, 3, 3, 1, 100, 3, 500, 20)
+robot.set_pose(pose(0, 0, 0))
+print(robot.move_to_point(0, 48))`, "python"),
+    h("ki and windup"),
+    p("Use ki only for steady-state error that kp and kd cannot reasonably remove. Keep a windup range so the integral only accumulates near the target."),
     h("Slew"),
     p("Slew limits acceleration. It is helpful when a simulated or physical drivetrain slips, tips, or saturates too aggressively."),
     h("Exit conditions"),
-    p("ControllerSettings stores small and large error windows with timeouts. Those values are available to motion code and tests through ExitCondition.from_settings."),
+    p("controller_settings stores small and large error windows with timeouts. Those values are available to motion code and tests through exit_condition.from_settings."),
   ]),
   tutorial("5 - Angular Motions", "5_angular_motion", [
     h("Turn to heading"),
     p("turn_to_heading rotates the robot to an absolute field heading."),
-    code(`chassis.set_pose(Pose(0, 0, 0))
-chassis.turn_to_heading(270)`, "python"),
+    code(`robot.set_pose(pose(0, 0, 0))
+robot.turn_to_heading(270)`, "python"),
     h("Turn to point"),
     p("turn_to_point calculates the heading from the current pose to a field coordinate."),
-    code(`chassis.turn_to_point(53, 53)`, "python"),
+    code(`robot.turn_to_point(53, 53)`, "python"),
     h("Swing to heading"),
     p("Swing turns lock one side of the drivetrain and move the other side."),
-    code(`chassis.swing_to_heading(45)`, "python"),
+    code(`robot.swing_to_heading(45)`, "python"),
     h("Swing to point"),
-    code(`chassis.swing_to_point(53, 53)`, "python"),
+    code(`robot.swing_to_point(53, 53)`, "python"),
   ]),
   tutorial("6 - Lateral Motion", "6_lateral_motion", [
     h("Move to point"),
     p("move_to_point drives to an x/y coordinate while turning toward the target point."),
-    code(`chassis.move_to_point(10, 10)`, "python"),
+    code(`robot.move_to_point(10, 10)`, "python"),
     h("Backwards movement"),
-    code(`from lemlib import MoveToPointParams
+    code(`from lemlib import move_to_point_params
 
-chassis.move_to_point(20, 15, params=MoveToPointParams(forwards=False))`, "python"),
+robot.move_to_point(20, 15, params=move_to_point_params(forwards=False))`, "python"),
     h("Move to pose"),
     p("move_to_pose uses a boomerang-style carrot point so the chassis can finish with a chosen heading."),
-    code(`chassis.move_to_pose(10, 10, 90)`, "python"),
+    code(`robot.move_to_pose(10, 10, 90)`, "python"),
     h("Lead and horizontal drift"),
-    code(`from lemlib import MoveToPoseParams
+    code(`from lemlib import move_to_pose_params
 
-params = MoveToPoseParams(lead=0.3, horizontal_drift=8)
-chassis.move_to_pose(0, 0, 0, params=params)`, "python"),
+params = move_to_pose_params(lead=0.3, horizontal_drift=8)
+robot.move_to_pose(0, 0, 0, params=params)`, "python"),
   ]),
   tutorial("7 - Pure Pursuit", "7_pure_pursuit", [
     h("What is pure pursuit?"),
@@ -233,31 +233,31 @@ chassis.move_to_pose(0, 0, 0, params=params)`, "python"),
     p("Use path.jerryio.com and export the original LemLib v0.5 format. It is a text file with one waypoint per line: x, y, speed, followed by endData."),
     code(samplePath, "text"),
     h("Load and follow"),
-    code(`from pathlib import Path as FilePath
+    code(`from pathlib import Path as file_path
 from lemlib import parse_lemlib_path
 
-path = parse_lemlib_path(FilePath("paths/skills.txt").read_text())
-chassis.follow(path, lookahead_distance=15)`, "python"),
+auton_path = parse_lemlib_path(file_path("paths/skills.txt").read_text())
+robot.follow(auton_path, lookahead_distance=15)`, "python"),
     h("Converter"),
-    p("The converter page turns the same LemLib text export into Python Path and Waypoint code."),
+    p("The converter page turns the same LemLib text export into Python path and waypoint code."),
   ]),
   tutorial("8 - Motion Chaining", "8_motion_chaining", [
     h("Introduction"),
     p("Motion chaining keeps the robot moving between commands. In Python, use minimum speeds, early-exit ranges, and explicit cancellation when a custom condition has been met."),
     h("Minimum speed"),
-    code(`from lemlib import MoveToPoseParams
+    code(`from lemlib import move_to_point_params, move_to_pose_params, swing_params
 
-first_leg = MoveToPoseParams(min_lateral_speed=72, early_exit_range=8)
-chassis.move_to_pose(48, -24, 90, params=first_leg)
-chassis.move_to_pose(64, 3, 0)`, "python"),
+first_leg = move_to_pose_params(min_lateral_speed=72, early_exit_range=8)
+robot.move_to_pose(48, -24, 90, params=first_leg)
+robot.move_to_pose(64, 3, 0)`, "python"),
     h("Motion cancellation"),
-    code(`signal = chassis.move_to_point(0, 24, params=MoveToPointParams(min_lateral_speed=48))
+    code(`signal = robot.move_to_point(0, 24, params=move_to_point_params(min_lateral_speed=48))
 if ball_detected():
-    chassis.cancel_motion()`, "python"),
+    robot.cancel_motion()`, "python"),
     h("Turning into a chain"),
-    code(`turn = SwingParams(min_speed=127, early_exit_range=20)
-chassis.swing_to_heading(90, params=turn)
-chassis.move_to_pose(120, 10, 0)`, "python"),
+    code(`turn = swing_params(min_speed=127, early_exit_range=20)
+robot.swing_to_heading(90, params=turn)
+robot.move_to_pose(120, 10, 0)`, "python"),
   ]),
   {
     id: "api",
@@ -299,50 +299,83 @@ function tutorial(title, id, blocks) {
 }
 
 function apiReferenceBlocks() {
+  const driveSignalReturn = "drive_signal with left, right, lateral, and angular outputs";
+  const motionTiming = [
+    param("timeout", "float | none", "none", "Maximum time budget for the motion step. The hardware-agnostic port stores the value for API parity; callers can enforce it in their robot loop."),
+    param("dt", "float", "0.01", "Controller timestep in seconds. Smaller values make derivative calculations more sensitive; use your loop period when simulating."),
+  ];
+  const turnParams = [
+    param("max_speed", "float", "127.0", "Largest angular output allowed."),
+    param("min_speed", "float", "0.0", "Minimum angular output when the controller asks for a non-zero turn."),
+    param("slew", "float", "0.0", "Maximum output change rate. Zero disables slew limiting."),
+    param("early_exit_range", "float", "0.0", "Heading-error window where a caller may chain into the next motion early."),
+  ];
+  const pointMotionParams = [
+    param("x", "float", "required", "Target x coordinate in field units."),
+    param("y", "float", "required", "Target y coordinate in field units."),
+    ...motionTiming,
+  ];
+
   return [
-    p("This reference mirrors LemLib's API layout while documenting the Python package surface. Python names use snake_case first; camelCase aliases are listed where the port provides them for teams moving C++ snippets over gradually."),
+    p("This reference mirrors LemLib's API layout while documenting the Python package surface. Public functions and variables use lower_snake_case names."),
     apiIndex([
       {
-        title: "Main API",
+        title: "main api",
         items: [
-          "Chassis",
-          "DriveSignal",
-          "TurnToHeadingParams",
-          "TurnToPointParams",
-          "SwingParams",
-          "MoveToPointParams",
-          "MoveToPoseParams",
-          "FollowParams",
+          "chassis",
+          "set_pose",
+          "get_pose",
+          "tank",
+          "arcade",
+          "curvature",
+          "turn_to_heading",
+          "turn_to_point",
+          "swing_to_heading",
+          "swing_to_point",
+          "move_to_point",
+          "move_to_pose",
+          "follow",
+          "cancel_motion",
+          "cancel_all_motions",
+          "is_in_motion",
+          "brake",
         ],
       },
       {
-        title: "Builder Classes",
+        title: "parameters and data",
         items: [
-          "Drivetrain",
-          "OdomSensors",
-          "Omniwheel",
-          "ControllerSettings",
-          "ExitCondition",
-          "DriveCurve",
-          "ExpoDriveCurve",
+          "drive_signal",
+          "turn_to_heading_params",
+          "turn_to_point_params",
+          "swing_params",
+          "move_to_point_params",
+          "move_to_pose_params",
+          "follow_params",
+          "drivetrain",
+          "odom_sensors",
+          "controller_settings",
+          "exit_condition",
+          "drive_curve",
+          "expo_drive_curve",
+          "omniwheel",
         ],
       },
       {
-        title: "Odometry and Geometry",
-        items: ["Vector2D", "Pose", "TrackingWheel", "TrackingWheelOdometry"],
+        title: "odometry and geometry",
+        items: ["vector_2d", "pose", "tracking_wheel", "tracking_wheel_odometry"],
       },
       {
-        title: "Paths",
-        items: ["Waypoint", "Path", "parse_lemlib_path", "convert_lemlib_to_python"],
+        title: "paths",
+        items: ["waypoint", "path", "parse_lemlib_path", "convert_lemlib_to_python"],
       },
       {
-        title: "PID and Utils",
+        title: "pid and utils",
         items: [
-          "Gains",
-          "PID",
-          "AngularDirection",
-          "SlewDirection",
-          "DriveOutputs",
+          "gains",
+          "pid",
+          "angular_direction",
+          "slew_direction",
+          "drive_outputs",
           "deg_to_rad",
           "rad_to_deg",
           "sanitize_angle",
@@ -356,230 +389,68 @@ function apiReferenceBlocks() {
         ],
       },
     ]),
-    h("Main API"),
-    apiEntry(
-      "Chassis",
-      "Chassis(drivetrain, lateral_settings, angular_settings, sensors=None, throttle_curve=None, steer_curve=None, pose=None)",
-      "Hardware-agnostic tank-drive facade for driver control, odometry pose storage, and autonomous motion calculations.",
-      [
-        apiMember("calibrate(calibrate_imu=True)", "Resets the lateral and angular PID controllers."),
-        apiMember("set_pose(pose_or_x, y=None, theta=None)", "Stores the current pose. Accepts a Pose instance or x, y, theta values."),
-        apiMember("get_pose() -> Pose", "Returns the current robot pose."),
-        apiMember("tank(left, right, curve=True) -> DriveSignal", "Applies tank-drive outputs, optionally through the throttle curve."),
-        apiMember("arcade(throttle, steer, reverse=False, steer_priority=0.5) -> DriveSignal", "Mixes throttle and steering into left/right outputs."),
-        apiMember("curvature(throttle, curve, reverse=False) -> DriveSignal", "Curvature-drive helper where turn output scales with throttle magnitude."),
-        apiMember("turn_to_heading(heading, timeout=None, params=None, dt=0.01) -> DriveSignal", "Calculates an angular PID step toward an absolute heading."),
-        apiMember("turn_to_point(x, y, timeout=None, params=None, dt=0.01) -> DriveSignal", "Turns toward a field coordinate."),
-        apiMember("swing_to_heading(heading, timeout=None, params=None, dt=0.01) -> DriveSignal", "Turns while locking one drivetrain side."),
-        apiMember("swing_to_point(x, y, timeout=None, params=None, dt=0.01) -> DriveSignal", "Swing-turns toward a field coordinate."),
-        apiMember("move_to_point(x, y, timeout=None, params=None, dt=0.01) -> DriveSignal", "Runs a lateral and angular control step toward a point."),
-        apiMember("move_to_pose(x, y, theta, timeout=None, params=None, dt=0.01) -> DriveSignal", "Runs the boomerang-style pose motion calculation."),
-        apiMember("follow(path, lookahead_distance, timeout=None, params=None, dt=0.01) -> DriveSignal", "Follows a LemLib path or parsed Path using pure-pursuit lookahead."),
-        apiMember("cancel_motion()", "Stops the current motion by braking the drivetrain adapters."),
-        apiMember("cancel_all_motions()", "Compatibility wrapper around cancel_motion()."),
-        apiMember("is_in_motion() -> bool", "Returns whether the last commanded signal is non-zero."),
-        apiMember("brake()", "Calls brake() on motor adapters that provide it and clears last_signal."),
-      ],
-      ["setPose", "getPose", "turnToHeading", "turnToPoint", "swingToHeading", "swingToPoint", "moveToPoint", "moveToPose", "cancelMotion", "cancelAllMotions", "isInMotion"],
-    ),
-    apiEntry(
-      "DriveSignal",
-      "DriveSignal(left: float, right: float, lateral: float = 0.0, angular: float = 0.0)",
-      "Return value for drivetrain commands. Left and right are motor outputs; lateral and angular keep the mixed controller components available for logging or simulation.",
-    ),
-    h("Movement Options"),
-    apiEntry(
-      "TurnToHeadingParams",
-      "TurnToHeadingParams(max_speed=127.0, min_speed=0.0, slew=0.0, early_exit_range=0.0)",
-      "Options for absolute heading turns.",
-    ),
-    apiEntry(
-      "TurnToPointParams",
-      "TurnToPointParams(max_speed=127.0, min_speed=0.0, slew=0.0, early_exit_range=0.0, forwards=True)",
-      "Turn-to-point options. Set forwards to False when the robot should face the target with its back side.",
-    ),
-    apiEntry(
-      "SwingParams",
-      "SwingParams(max_speed=127.0, min_speed=0.0, slew=0.0, early_exit_range=0.0, locked_side='left')",
-      "Swing-turn options. locked_side may be 'left' or 'right'.",
-    ),
-    apiEntry(
-      "MoveToPointParams",
-      "MoveToPointParams(forwards=True, max_lateral_speed=127.0, min_lateral_speed=0.0, max_angular_speed=127.0, lateral_slew=0.0, angular_slew=0.0, early_exit_range=0.0)",
-      "Options for point-to-point lateral motion.",
-    ),
-    apiEntry(
-      "MoveToPoseParams",
-      "MoveToPoseParams(..., lead=0.6, horizontal_drift=None)",
-      "Extends MoveToPointParams with boomerang lead and optional horizontal drift limiting.",
-    ),
-    apiEntry(
-      "FollowParams",
-      "FollowParams(forwards=True, lateral_slew=0.0)",
-      "Options for pure-pursuit path following.",
-    ),
-    h("Builder Classes"),
-    apiEntry(
-      "Drivetrain",
-      "Drivetrain(left_motors=None, right_motors=None, track_width=0.0, wheel_diameter=Omniwheel.NEW_4, rpm=360.0, horizontal_drift=2.0)",
-      "Stores tank-drive geometry and hardware adapters.",
-      [apiMember("wheel_size -> float", "Property returning the wheel diameter as a plain float.")],
-    ),
-    apiEntry(
-      "OdomSensors",
-      "OdomSensors(vertical_1=None, vertical_2=None, horizontal_1=None, horizontal_2=None, imu=None)",
-      "Container for tracking-wheel and IMU adapters.",
-    ),
-    apiEntry(
-      "Omniwheel",
-      "Enum: NEW_2, NEW_275, OLD_275, NEW_275_HALF, OLD_275_HALF, NEW_325, OLD_325, NEW_325_HALF, OLD_325_HALF, NEW_4, OLD_4, NEW_4_HALF, OLD_4_HALF",
-      "Wheel diameter presets matching LemLib's common VEX omniwheel constants.",
-    ),
-    apiEntry(
-      "ControllerSettings",
-      "ControllerSettings(kp, ki, kd, windup_range=0.0, small_error=0.0, small_timeout=0.0, large_error=0.0, large_timeout=0.0, slew=0.0)",
-      "PID and exit-condition configuration for chassis controllers.",
-      [apiMember("create_pid() -> PID", "Builds a PID controller with sign-flip reset enabled.")],
-    ),
-    apiEntry(
-      "ExitCondition",
-      "ExitCondition(small_error=0.0, small_timeout=0.0, large_error=0.0, large_timeout=0.0)",
-      "Tracks small-error and large-error settling windows.",
-      [
-        apiMember("from_settings(settings) -> ExitCondition", "Creates an exit condition from ControllerSettings timeouts."),
-        apiMember("update(error, dt) -> bool", "Returns True when either settling window has elapsed."),
-        apiMember("reset()", "Clears elapsed settling timers."),
-      ],
-    ),
-    apiEntry(
-      "DriveCurve",
-      "DriveCurve().curve(value: float) -> float",
-      "Base driver-control curve. The default curve returns the input unchanged and is callable.",
-    ),
-    apiEntry(
-      "ExpoDriveCurve",
-      "ExpoDriveCurve(deadband=3.0, minimum_output=10.0, curve_gain=1.019, maximum_input=127.0)",
-      "Exponential joystick curve with a deadband and minimum output.",
-      [apiMember("curve(value) -> float", "Returns the curved driver-control value.")],
-    ),
-    h("Odometry"),
-    apiEntry(
-      "Vector2D",
-      "Vector2D(x=0.0, y=0.0)",
-      "2D point or displacement in field units.",
-      [
-        apiMember("distance_to(other) -> float", "Euclidean distance to another vector."),
-        apiMember("angle_to(other) -> float", "Heading in degrees where 0 points along +Y."),
-        apiMember("rotated_by(theta) -> Vector2D", "Rotates using robot-heading convention."),
-        apiMember("from_polar(theta, radius) -> Vector2D", "Class method for heading/radius construction."),
-      ],
-    ),
-    apiEntry(
-      "Pose",
-      "Pose(x=0.0, y=0.0, theta=0.0)",
-      "Robot pose with position and heading.",
-      [
-        apiMember("orientation -> float", "Property alias for theta."),
-        apiMember("with_heading(theta) -> Pose", "Returns the same position with a new heading."),
-        apiMember("translated(delta) -> Pose", "Returns a pose shifted by a Vector2D."),
-        apiMember("as_vector() -> Vector2D", "Returns the x/y component as a vector."),
-      ],
-    ),
-    apiEntry(
-      "TrackingWheel",
-      "TrackingWheel(diameter: float, offset: float, ratio: float = 1.0, last_total: float = 0.0)",
-      "Converts encoder degrees into tracking-wheel travel.",
-      [
-        apiMember("distance_from_degrees(degrees) -> float", "Converts encoder degrees to linear distance."),
-        apiMember("distance_delta(total_degrees) -> float", "Returns travel since the previous total and stores the new total."),
-        apiMember("reset()", "Resets the stored wheel total."),
-      ],
-    ),
-    apiEntry(
-      "TrackingWheelOdometry",
-      "TrackingWheelOdometry(pose=None)",
-      "Tracking-wheel odometry update math.",
-      [
-        apiMember("get_pose() -> Pose", "Returns the current pose."),
-        apiMember("set_pose(pose)", "Stores a pose."),
-        apiMember("update(vertical_delta, horizontal_delta, heading, vertical_offset=0.0, horizontal_offset=0.0) -> Pose", "Applies one odometry update and returns the new pose."),
-      ],
-      ["getPose", "setPose"],
-    ),
-    h("Path Tools"),
-    apiEntry(
-      "Waypoint",
-      "Waypoint(x: float, y: float, speed: float)",
-      "One point from a path.jerryio LemLib v0.5 export.",
-    ),
-    apiEntry(
-      "Path",
-      "Path(list[Waypoint])",
-      "List-like path object with export helpers.",
-      [
-        apiMember("to_lemlib() -> str", "Serializes to LemLib path text ending with endData."),
-        apiMember("to_python(variable_name='path') -> str", "Serializes to importable Python code."),
-        apiMember("to_json() -> str", "Serializes waypoints as formatted JSON."),
-      ],
-    ),
-    apiEntry(
-      "parse_lemlib_path",
-      "parse_lemlib_path(text: str) -> Path",
-      "Parses path.jerryio's LemLib v0.5 text export.",
-    ),
-    apiEntry(
-      "convert_lemlib_to_python",
-      "convert_lemlib_to_python(text: str, variable_name: str = 'path') -> str",
-      "Converts LemLib path text directly into Python Path and Waypoint code.",
-    ),
-    h("PID"),
-    apiEntry(
-      "Gains",
-      "Gains(kp=0.0, ki=0.0, kd=0.0)",
-      "PID gain container.",
-    ),
-    apiEntry(
-      "PID",
-      "PID(kp: float | Gains, ki=0.0, kd=0.0, windup_range=0.0, sign_flip_reset=False)",
-      "PID controller compatible with LemLib's control style.",
-      [
-        apiMember("get_gains() -> Gains", "Returns a copy of the current gains."),
-        apiMember("set_gains(gains)", "Replaces PID gains."),
-        apiMember("update(error, dt=None) -> float", "Calculates the next controller output."),
-        apiMember("reset()", "Clears previous error, integral, and timing state."),
-        apiMember("set_sign_flip_reset(value)", "Toggles integral reset when error sign changes."),
-        apiMember("get_sign_flip_reset() -> bool", "Returns the sign-flip reset setting."),
-        apiMember("set_windup_range(value)", "Sets the integral windup range."),
-        apiMember("get_windup_range() -> float", "Returns the integral windup range."),
-      ],
-      ["getGains", "setGains", "setSignFlipReset", "getSignFlipReset", "setWindupRange", "getWindupRange"],
-    ),
-    h("Utils"),
-    apiEntry(
-      "AngularDirection",
-      "Enum: CW_CLOCKWISE='cw', CCW_COUNTERCLOCKWISE='ccw'",
-      "Optional direction constraint for angle_error().",
-    ),
-    apiEntry(
-      "SlewDirection",
-      "Enum: INCREASING='increasing', DECREASING='decreasing', ALL='all'",
-      "Optional direction constraint for slew().",
-    ),
-    apiEntry(
-      "DriveOutputs",
-      "DriveOutputs(left: float, right: float)",
-      "Normalized left/right output pair returned by desaturate().",
-    ),
-    apiEntry("deg_to_rad", "deg_to_rad(deg: float) -> float", "Converts degrees to radians."),
-    apiEntry("rad_to_deg", "rad_to_deg(rad: float) -> float", "Converts radians to degrees."),
-    apiEntry("sanitize_angle", "sanitize_angle(angle: float) -> float", "Wraps an angle to [0, 360)."),
-    apiEntry("angle_error", "angle_error(target: float, position: float, direction: AngularDirection | None = None) -> float", "Returns target-position heading error in degrees."),
-    apiEntry("slew", "slew(target: float, current: float, max_change_rate: float, delta_time: float = 1.0, direction_limit: SlewDirection = SlewDirection.ALL) -> float", "Constrains value change over time."),
-    apiEntry("constrain_power", "constrain_power(power: float, maximum: float, minimum: float = 0) -> float", "Applies signed minimum and absolute maximum output limits."),
-    apiEntry("desaturate", "desaturate(lateral_output: float, angular_output: float) -> DriveOutputs", "Combines lateral and angular outputs into normalized left/right outputs."),
-    apiEntry("get_signed_tangent_arc_curvature", "get_signed_tangent_arc_curvature(start: Pose, end: Vector2D) -> float", "Returns the signed curvature of an arc tangent to a starting pose and ending at a point."),
-    apiEntry("avg", "avg(*values: float) -> float", "Returns the arithmetic mean. A single iterable is accepted."),
-    apiEntry("ema", "ema(previous: float, current: float, alpha: float) -> float", "Returns an exponential moving average."),
+    apiEntry("chassis", "chassis(drivetrain, lateral_settings, angular_settings, sensors=None, throttle_curve=None, steer_curve=None, pose=None)", "Hardware-agnostic tank-drive facade for driver control, pose storage, and autonomous motion calculations.", [
+      param("drivetrain", "drivetrain", "required", "drivetrain geometry and motor adapters."),
+      param("lateral_settings", "controller_settings", "required", "pid and exit settings for forward/backward motion."),
+      param("angular_settings", "controller_settings", "required", "pid and exit settings for turns."),
+      param("sensors", "odom_sensors | none", "none", "Optional tracking-wheel and IMU adapters."),
+      param("throttle_curve", "drive_curve | none", "none", "Optional driver throttle shaping curve."),
+      param("steer_curve", "drive_curve | none", "none", "Optional driver steering shaping curve."),
+      param("pose", "pose | none", "none", "Initial field pose."),
+    ], "chassis instance"),
+    apiEntry("set_pose", "set_pose(pose_or_x, y=None, theta=None)", "Stores the current robot pose.", [param("pose_or_x", "pose | float", "required", "Either a pose object or the x coordinate."), param("y", "float | none", "none", "Y coordinate when setting pose from numbers."), param("theta", "float | none", "none", "Heading in degrees when setting pose from numbers.")], "none"),
+    apiEntry("get_pose", "get_pose()", "Returns the current robot pose.", [], "pose"),
+    apiEntry("tank", "tank(left, right, curve=True)", "Applies tank-drive output, optionally using the throttle curve.", [param("left", "float", "required", "Left drivetrain command."), param("right", "float", "required", "Right drivetrain command."), param("curve", "bool", "true", "Whether to pass both values through the throttle curve.")], driveSignalReturn),
+    apiEntry("arcade", "arcade(throttle, steer, reverse=False, steer_priority=0.5)", "Mixes throttle and steering into left/right outputs.", [param("throttle", "float", "required", "Forward/backward joystick input."), param("steer", "float", "required", "Turning joystick input."), param("reverse", "bool", "false", "Invert throttle before mixing."), param("steer_priority", "float", "0.5", "Blend factor from 0 to 1 that reserves output headroom for steering.")], driveSignalReturn),
+    apiEntry("curvature", "curvature(throttle, curve, reverse=False)", "Curvature-drive helper where turn output scales with throttle magnitude.", [param("throttle", "float", "required", "Forward/backward input."), param("curve", "float", "required", "Curvature or steering input."), param("reverse", "bool", "false", "Invert throttle before applying curvature.")], driveSignalReturn),
+    apiEntry("turn_to_heading", "turn_to_heading(heading, timeout=None, params=None, dt=0.01)", "Calculates one angular PID step toward an absolute field heading.", [param("heading", "float", "required", "Target heading in degrees."), param("params", "turn_to_heading_params | none", "none", "Turn speed, slew, and early-exit options."), ...motionTiming], driveSignalReturn),
+    apiEntry("turn_to_point", "turn_to_point(x, y, timeout=None, params=None, dt=0.01)", "Turns toward a field coordinate.", [...pointMotionParams, param("params", "turn_to_point_params | none", "none", "Turn options plus whether the robot should face the point forwards or backwards.")], driveSignalReturn),
+    apiEntry("swing_to_heading", "swing_to_heading(heading, timeout=None, params=None, dt=0.01)", "Turns while one drivetrain side is locked.", [param("heading", "float", "required", "Target heading in degrees."), param("params", "swing_params | none", "none", "Turn limits and locked-side selection."), ...motionTiming], driveSignalReturn),
+    apiEntry("swing_to_point", "swing_to_point(x, y, timeout=None, params=None, dt=0.01)", "Swing-turns toward a field coordinate.", [...pointMotionParams, param("params", "swing_params | none", "none", "Turn limits and locked-side selection.")], driveSignalReturn),
+    apiEntry("move_to_point", "move_to_point(x, y, timeout=None, params=None, dt=0.01)", "Runs a lateral and angular control step toward a point.", [...pointMotionParams, param("params", "move_to_point_params | none", "none", "Direction, speed caps, slew limits, and early-exit options.")], driveSignalReturn),
+    apiEntry("move_to_pose", "move_to_pose(x, y, theta, timeout=None, params=None, dt=0.01)", "Runs a boomerang-style motion toward a target pose.", [...pointMotionParams, param("theta", "float", "required", "Desired final heading in degrees."), param("params", "move_to_pose_params | none", "none", "Point-motion options plus lead and horizontal drift tuning.")], driveSignalReturn),
+    apiEntry("follow", "follow(path, lookahead_distance, timeout=None, params=None, dt=0.01)", "Follows a LemLib path using pure-pursuit lookahead.", [param("path", "str | path", "required", "Path text or a parsed path object."), param("lookahead_distance", "float", "required", "Distance ahead of the robot used to choose the carrot point."), param("params", "follow_params | none", "none", "Direction and lateral slew options."), ...motionTiming], driveSignalReturn),
+    apiEntry("cancel_motion", "cancel_motion()", "Stops the current motion by braking the drivetrain adapters.", [], "none"),
+    apiEntry("cancel_all_motions", "cancel_all_motions()", "Stops all chassis motion. In this port it is the same operation as cancel_motion().", [], "none"),
+    apiEntry("is_in_motion", "is_in_motion()", "Returns whether the last commanded signal is non-zero.", [], "bool"),
+    apiEntry("brake", "brake()", "Calls brake() on motor adapters that provide it and clears last_signal.", [], "none"),
+    apiEntry("drive_signal", "drive_signal(left, right, lateral=0.0, angular=0.0)", "Return value for drivetrain commands.", [param("left", "float", "required", "Left drivetrain output."), param("right", "float", "required", "Right drivetrain output."), param("lateral", "float", "0.0", "Forward/backward component before drivetrain mixing."), param("angular", "float", "0.0", "Turning component before drivetrain mixing.")], "data object"),
+    apiEntry("turn_to_heading_params", "turn_to_heading_params(max_speed=127.0, min_speed=0.0, slew=0.0, early_exit_range=0.0)", "Parameters for turn_to_heading.", turnParams, "parameter object"),
+    apiEntry("turn_to_point_params", "turn_to_point_params(max_speed=127.0, min_speed=0.0, slew=0.0, early_exit_range=0.0, forwards=True)", "Parameters for turn_to_point.", [...turnParams, param("forwards", "bool", "true", "Whether the robot should turn to face the point with its front side.")], "parameter object"),
+    apiEntry("swing_params", "swing_params(max_speed=127.0, min_speed=0.0, slew=0.0, early_exit_range=0.0, locked_side='left')", "Parameters for swing_to_heading and swing_to_point.", [...turnParams, param("locked_side", "str", "'left'", "The drivetrain side held at zero output. Use 'left' or 'right'.")], "parameter object"),
+    apiEntry("move_to_point_params", "move_to_point_params(forwards=True, max_lateral_speed=127.0, min_lateral_speed=0.0, max_angular_speed=127.0, lateral_slew=0.0, angular_slew=0.0, early_exit_range=0.0)", "Parameters for move_to_point.", [param("forwards", "bool", "true", "Drive toward the point with the front of the robot."), param("max_lateral_speed", "float", "127.0", "Maximum forward/backward output."), param("min_lateral_speed", "float", "0.0", "Minimum non-zero lateral output."), param("max_angular_speed", "float", "127.0", "Maximum turning output."), param("lateral_slew", "float", "0.0", "Rate limit for lateral output."), param("angular_slew", "float", "0.0", "Rate limit for angular output."), param("early_exit_range", "float", "0.0", "Distance window where a caller may chain into the next motion early.")], "parameter object"),
+    apiEntry("move_to_pose_params", "move_to_pose_params(..., lead=0.6, horizontal_drift=None)", "Parameters for move_to_pose.", [param("forwards", "bool", "true", "Drive toward the pose with the front of the robot."), param("max_lateral_speed", "float", "127.0", "Maximum forward/backward output."), param("min_lateral_speed", "float", "0.0", "Minimum non-zero lateral output."), param("max_angular_speed", "float", "127.0", "Maximum turning output."), param("lateral_slew", "float", "0.0", "Rate limit for lateral output."), param("angular_slew", "float", "0.0", "Rate limit for angular output."), param("early_exit_range", "float", "0.0", "Distance window where a caller may chain into the next motion early."), param("lead", "float", "0.6", "How far the boomerang carrot point leads the target pose."), param("horizontal_drift", "float | none", "none", "Drift constant used to limit slip speed through curves.")], "parameter object"),
+    apiEntry("follow_params", "follow_params(forwards=True, lateral_slew=0.0)", "Parameters for follow.", [param("forwards", "bool", "true", "Follow the path with the front of the robot."), param("lateral_slew", "float", "0.0", "Rate limit applied to path-following velocity.")], "parameter object"),
+    apiEntry("drivetrain", "drivetrain(left_motors=None, right_motors=None, track_width=0.0, wheel_diameter=omniwheel.new_4, rpm=360.0, horizontal_drift=2.0)", "Stores tank-drive geometry and motor adapters.", [param("left_motors", "object | callable | none", "none", "Adapter for the left motors."), param("right_motors", "object | callable | none", "none", "Adapter for the right motors."), param("track_width", "float", "0.0", "Distance between left and right wheel contact lines."), param("wheel_diameter", "float | omniwheel", "omniwheel.new_4", "Drive wheel diameter."), param("rpm", "float", "360.0", "Drive motor rpm."), param("horizontal_drift", "float", "2.0", "Slip/drift tuning constant for curved pose motions.")], "configuration object"),
+    apiEntry("odom_sensors", "odom_sensors(vertical_1=None, vertical_2=None, horizontal_1=None, horizontal_2=None, imu=None)", "Container for odometry sensor adapters.", [param("vertical_1", "object | none", "none", "Primary vertical tracking sensor."), param("vertical_2", "object | none", "none", "Secondary vertical tracking sensor."), param("horizontal_1", "object | none", "none", "Primary horizontal tracking sensor."), param("horizontal_2", "object | none", "none", "Secondary horizontal tracking sensor."), param("imu", "object | none", "none", "Heading sensor adapter.")], "configuration object"),
+    apiEntry("controller_settings", "controller_settings(kp, ki, kd, windup_range=0.0, small_error=0.0, small_timeout=0.0, large_error=0.0, large_timeout=0.0, slew=0.0)", "PID and exit-condition configuration.", [param("kp", "float", "required", "Proportional gain."), param("ki", "float", "required", "Integral gain."), param("kd", "float", "required", "Derivative gain."), param("windup_range", "float", "0.0", "Error range where integral is allowed to accumulate."), param("small_error", "float", "0.0", "Tight settling error threshold."), param("small_timeout", "float", "0.0", "Time in milliseconds required inside small_error."), param("large_error", "float", "0.0", "Loose settling error threshold."), param("large_timeout", "float", "0.0", "Time in milliseconds required inside large_error."), param("slew", "float", "0.0", "Default slew rate for motions using this controller.")], "configuration object"),
+    apiEntry("exit_condition", "exit_condition(small_error=0.0, small_timeout=0.0, large_error=0.0, large_timeout=0.0)", "Tracks small-error and large-error settling windows.", [param("small_error", "float", "0.0", "Tight settling error threshold."), param("small_timeout", "float", "0.0", "Seconds required inside small_error."), param("large_error", "float", "0.0", "Loose settling error threshold."), param("large_timeout", "float", "0.0", "Seconds required inside large_error.")], "configuration object"),
+    apiEntry("drive_curve", "drive_curve().curve(value)", "Base driver-control curve. The default curve returns the input unchanged.", [param("value", "float", "required", "Raw joystick value.")], "float"),
+    apiEntry("expo_drive_curve", "expo_drive_curve(deadband=3.0, minimum_output=10.0, curve_gain=1.019, maximum_input=127.0)", "Exponential joystick curve with deadband and minimum output.", [param("deadband", "float", "3.0", "Input magnitude treated as zero."), param("minimum_output", "float", "10.0", "Output after leaving the deadband."), param("curve_gain", "float", "1.019", "Exponent base controlling curve strength."), param("maximum_input", "float", "127.0", "Largest joystick input magnitude.")], "drive_curve"),
+    apiEntry("omniwheel", "omniwheel.new_2 | new_275 | old_275 | new_325 | old_325 | new_4 | old_4", "Wheel diameter presets matching common VEX omniwheels.", [], "enum"),
+    apiEntry("vector_2d", "vector_2d(x=0.0, y=0.0)", "2D point or displacement in field units.", [param("x", "float", "0.0", "Field x coordinate."), param("y", "float", "0.0", "Field y coordinate.")], "data object"),
+    apiEntry("pose", "pose(x=0.0, y=0.0, theta=0.0)", "Robot pose with position and heading.", [param("x", "float", "0.0", "Field x coordinate."), param("y", "float", "0.0", "Field y coordinate."), param("theta", "float", "0.0", "Heading in degrees.")], "data object"),
+    apiEntry("tracking_wheel", "tracking_wheel(diameter, offset, ratio=1.0, last_total=0.0)", "Converts encoder degrees into tracking-wheel travel.", [param("diameter", "float", "required", "Wheel diameter."), param("offset", "float", "required", "Tracking wheel offset from tracking center."), param("ratio", "float", "1.0", "Gear ratio from encoder to wheel."), param("last_total", "float", "0.0", "Stored distance total for delta calculations.")], "tracking wheel object"),
+    apiEntry("tracking_wheel_odometry", "tracking_wheel_odometry(pose=None)", "Tracking-wheel odometry update math.", [param("pose", "pose | none", "none", "Initial pose.")], "odometry object"),
+    apiEntry("waypoint", "waypoint(x, y, speed)", "One point from a path.jerryio LemLib export.", [param("x", "float", "required", "Waypoint x coordinate."), param("y", "float", "required", "Waypoint y coordinate."), param("speed", "float", "required", "Target path speed at the waypoint.")], "data object"),
+    apiEntry("path", "path([waypoint(...), ...])", "List-like path object with export helpers.", [param("waypoints", "list[waypoint]", "required", "Ordered path waypoints.")], "path object"),
+    apiEntry("parse_lemlib_path", "parse_lemlib_path(text)", "Parses path.jerryio's LemLib v0.5 text export.", [param("text", "str", "required", "Text containing x, y, speed lines ending at endData.")], "path"),
+    apiEntry("convert_lemlib_to_python", "convert_lemlib_to_python(text, variable_name='path')", "Converts LemLib path text into Python path and waypoint code.", [param("text", "str", "required", "LemLib path export text."), param("variable_name", "str", "'path'", "Python variable name for the generated code.")], "str"),
+    apiEntry("gains", "gains(kp=0.0, ki=0.0, kd=0.0)", "PID gain container.", [param("kp", "float", "0.0", "Proportional gain."), param("ki", "float", "0.0", "Integral gain."), param("kd", "float", "0.0", "Derivative gain.")], "data object"),
+    apiEntry("pid", "pid(kp, ki=0.0, kd=0.0, windup_range=0.0, sign_flip_reset=False)", "pid controller compatible with LemLib's control style.", [param("kp", "float | gains", "required", "Proportional gain or a gains object."), param("ki", "float", "0.0", "Integral gain."), param("kd", "float", "0.0", "Derivative gain."), param("windup_range", "float", "0.0", "Error range where integral is allowed to accumulate."), param("sign_flip_reset", "bool", "false", "Reset integral when error changes sign.")], "pid object"),
+    apiEntry("angular_direction", "angular_direction.cw_clockwise | angular_direction.ccw_counterclockwise", "Optional direction constraint for angle_error.", [], "enum"),
+    apiEntry("slew_direction", "slew_direction.increasing | slew_direction.decreasing | slew_direction.all", "Optional direction constraint for slew.", [], "enum"),
+    apiEntry("drive_outputs", "drive_outputs(left, right)", "Normalized left/right output pair returned by desaturate.", [param("left", "float", "required", "Left normalized output."), param("right", "float", "required", "Right normalized output.")], "data object"),
+    apiEntry("deg_to_rad", "deg_to_rad(deg)", "Converts degrees to radians.", [param("deg", "float", "required", "Angle in degrees.")], "float"),
+    apiEntry("rad_to_deg", "rad_to_deg(rad)", "Converts radians to degrees.", [param("rad", "float", "required", "Angle in radians.")], "float"),
+    apiEntry("sanitize_angle", "sanitize_angle(angle)", "Wraps an angle to [0, 360).", [param("angle", "float", "required", "Angle in degrees.")], "float"),
+    apiEntry("angle_error", "angle_error(target, position, direction=None)", "Returns target-position heading error in degrees.", [param("target", "float", "required", "Target heading in degrees."), param("position", "float", "required", "Current heading in degrees."), param("direction", "angular_direction | none", "none", "Optional forced turn direction.")], "float"),
+    apiEntry("slew", "slew(target, current, max_change_rate, delta_time=1.0, direction_limit=slew_direction.all)", "Constrains value change over time.", [param("target", "float", "required", "Desired value."), param("current", "float", "required", "Current value."), param("max_change_rate", "float", "required", "Maximum change per second."), param("delta_time", "float", "1.0", "Elapsed time in seconds."), param("direction_limit", "slew_direction", "slew_direction.all", "Which direction to limit.")], "float"),
+    apiEntry("constrain_power", "constrain_power(power, maximum, minimum=0)", "Applies signed minimum and absolute maximum output limits.", [param("power", "float", "required", "Requested output."), param("maximum", "float", "required", "Largest allowed magnitude."), param("minimum", "float", "0", "Smallest non-zero magnitude.")], "float"),
+    apiEntry("desaturate", "desaturate(lateral_output, angular_output)", "Combines lateral and angular outputs into normalized left/right outputs.", [param("lateral_output", "float", "required", "Forward/backward component."), param("angular_output", "float", "required", "Turning component.")], "drive_outputs"),
+    apiEntry("get_signed_tangent_arc_curvature", "get_signed_tangent_arc_curvature(start, end)", "Returns signed curvature for an arc tangent to a starting pose and ending at a point.", [param("start", "pose", "required", "Starting pose."), param("end", "vector_2d", "required", "Ending point.")], "float"),
+    apiEntry("avg", "avg(*values)", "Returns the arithmetic mean. A single iterable is accepted.", [param("values", "float | iterable", "required", "Values to average.")], "float"),
+    apiEntry("ema", "ema(previous, current, alpha)", "Returns an exponential moving average.", [param("previous", "float", "required", "Previous filtered value."), param("current", "float", "required", "Current sample."), param("alpha", "float", "required", "Blend factor from 0 to 1.")], "float"),
   ];
 }
 
@@ -587,12 +458,12 @@ function apiIndex(sections) {
   return { type: "api-index", sections };
 }
 
-function apiEntry(name, signature, description, members = [], aliases = []) {
-  return { type: "api-entry", name, signature, description, members, aliases };
+function apiEntry(name, signature, description, parameters = [], returns = "", notes = []) {
+  return { type: "api-entry", name, signature, description, parameters, returns, notes };
 }
 
-function apiMember(name, text) {
-  return { name, text };
+function param(name, type, defaultValue, text) {
+  return { name, type, defaultValue, text };
 }
 
 const apiSections = apiReferenceBlocks().find((block) => block.type === "api-index").sections;
@@ -828,7 +699,9 @@ function App() {
       <aside className="toc liquidGL">
         {active.id === "api" ? (
           <>
-            <p>API Reference</p>
+            <button className="toc-title-button" onClick={scrollArticleTop}>
+              API Reference
+            </button>
             <ApiSidebarTree
               sections={apiSections}
               activeApiId={activeApiId}
@@ -913,7 +786,7 @@ function ApiReference({ activeApiId, onOpenEntry }) {
   return (
     <div className="api-reference">
       <p className="api-reference-intro">
-        This reference mirrors LemLib's API layout while documenting the Python package surface. Pick a function or class from the index, then use the focused card for the signature, behavior, methods, and aliases.
+        This reference mirrors LemLib's API layout while documenting the Python package surface. Pick any function, parameter object, or data object to expand a full card with parameter detail.
       </p>
       <section className="api-focus-card" id={slug(selected.name)} aria-live="polite">
         <div className="api-focus-header">
@@ -921,28 +794,41 @@ function ApiReference({ activeApiId, onOpenEntry }) {
             <span className="api-focus-kicker">Selected Reference</span>
             <h2><code>{selected.name}</code></h2>
           </div>
+          {selected.returns && <span className="api-return-badge">returns {selected.returns}</span>}
         </div>
         <pre className="api-signature"><code>{selected.signature}</code></pre>
-        <p>{selected.description}</p>
-        {selected.members.length > 0 && (
-          <dl className="api-detail-list">
-            {selected.members.map((member) => (
-              <React.Fragment key={member.name}>
-                <dt><code>{member.name}</code></dt>
-                <dd>{member.text}</dd>
-              </React.Fragment>
-            ))}
-          </dl>
-        )}
-        {selected.aliases.length > 0 && (
-          <p className="api-aliases">
-            <strong>Aliases:</strong>{" "}
-            {selected.aliases.map((alias, aliasIndex) => (
-              <React.Fragment key={alias}>
-                <code>{alias}</code>{aliasIndex < selected.aliases.length - 1 ? " " : ""}
-              </React.Fragment>
-            ))}
-          </p>
+        <div className="api-detail-grid">
+          <section className="api-detail-summary">
+            <h3>what it does</h3>
+            <p>{selected.description}</p>
+          </section>
+          <section className="api-detail-params">
+            <h3>parameters</h3>
+            {selected.parameters.length > 0 ? (
+              <div className="api-param-grid">
+                {selected.parameters.map((parameter) => (
+                  <article className="api-param-card" key={parameter.name}>
+                    <div>
+                      <code>{parameter.name}</code>
+                      <span>{parameter.type}</span>
+                    </div>
+                    <p>{parameter.text}</p>
+                    <small>default: <code>{parameter.defaultValue}</code></small>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p>No parameters.</p>
+            )}
+          </section>
+        </div>
+        {selected.notes.length > 0 && (
+          <section className="api-detail-notes">
+            <h3>notes</h3>
+            <ul>
+              {selected.notes.map((note) => <li key={note}>{note}</li>)}
+            </ul>
+          </section>
         )}
       </section>
       <div className="reference-index api-reference-index">
@@ -952,13 +838,15 @@ function ApiReference({ activeApiId, onOpenEntry }) {
             <div className="reference-link-list">
               {section.items.map((item) => {
                 const entryId = slug(item);
+                const entry = apiEntries.find((candidate) => slug(candidate.name) === entryId);
                 return (
                   <button
                     key={item}
                     className={`reference-link ${entryId === slug(selected.name) ? "active" : ""}`}
                     onClick={() => onOpenEntry(entryId)}
                   >
-                    {item}
+                    <span>{item}</span>
+                    {entry && <code>{compactSignature(entry)}</code>}
                   </button>
                 );
               })}
@@ -968,6 +856,13 @@ function ApiReference({ activeApiId, onOpenEntry }) {
       </div>
     </div>
   );
+}
+
+function compactSignature(entry) {
+  const start = entry.signature.indexOf("(");
+  const end = entry.signature.lastIndexOf(")");
+  if (start === -1 || end === -1 || end < start) return entry.signature;
+  return entry.signature.slice(start + 1, end) || "no parameters";
 }
 
 function Blocks({ blocks }) {
@@ -1023,25 +918,15 @@ function Blocks({ blocks }) {
               <h3><code>{block.name}</code></h3>
               <pre className="api-signature"><code>{block.signature}</code></pre>
               <p>{block.description}</p>
-              {block.members.length > 0 && (
+              {block.parameters.length > 0 && (
                 <dl className="api-detail-list">
-                  {block.members.map((member) => (
-                    <React.Fragment key={member.name}>
-                      <dt><code>{member.name}</code></dt>
-                      <dd>{member.text}</dd>
+                  {block.parameters.map((parameter) => (
+                    <React.Fragment key={parameter.name}>
+                      <dt><code>{parameter.name}</code></dt>
+                      <dd>{parameter.text}</dd>
                     </React.Fragment>
                   ))}
                 </dl>
-              )}
-              {block.aliases.length > 0 && (
-                <p className="api-aliases">
-                  <strong>Aliases:</strong>{" "}
-                  {block.aliases.map((alias, aliasIndex) => (
-                    <React.Fragment key={alias}>
-                      <code>{alias}</code>{aliasIndex < block.aliases.length - 1 ? " " : ""}
-                    </React.Fragment>
-                  ))}
-                </p>
               )}
             </section>
           );
@@ -1080,7 +965,7 @@ function Converter() {
 
   return (
     <section id="converter" className="converter">
-      <p>Paste a path.jerryio LemLib v0.5 export and convert it into Python code for <code>Path</code> and <code>Waypoint</code>.</p>
+      <p>Paste a path.jerryio LemLib v0.5 export and convert it into Python code for <code>path</code> and <code>waypoint</code>.</p>
       <label className="field-label">
         Variable name
         <input value={name} onChange={(event) => setName(event.target.value || "path")} />
@@ -1128,8 +1013,8 @@ function toPython(text, variableName) {
     points.push(nums);
   }
   if (!points.length) throw new Error("no LemLib waypoints found");
-  const rows = points.map(([x, y, speed]) => `    Waypoint(${x}, ${y}, ${speed})`).join(",\n");
-  return `from lemlib import Path, Waypoint\n\n${variableName} = Path([\n${rows}\n])\n`;
+  const rows = points.map(([x, y, speed]) => `    waypoint(${x}, ${y}, ${speed})`).join(",\n");
+  return `from lemlib import path, waypoint\n\n${variableName} = path([\n${rows}\n])\n`;
 }
 
 function groupPages(items) {

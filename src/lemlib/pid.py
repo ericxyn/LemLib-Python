@@ -80,14 +80,6 @@ class PID:
     def get_windup_range(self) -> float:
         return self.windup_range
 
-    getGains = get_gains
-    setGains = set_gains
-    setSignFlipReset = set_sign_flip_reset
-    getSignFlipReset = get_sign_flip_reset
-    setWindupRange = set_windup_range
-    getWindupRange = get_windup_range
-
 
 def _sign(value: float) -> int:
     return 1 if value > 0 else -1 if value < 0 else 0
-

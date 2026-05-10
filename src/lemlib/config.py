@@ -9,19 +9,33 @@ from .pid import PID
 
 
 class Omniwheel(float, Enum):
-    NEW_2 = 2.125
-    NEW_275 = 2.75
-    OLD_275 = 2.75
-    NEW_275_HALF = 2.744
-    OLD_275_HALF = 2.74
-    NEW_325 = 3.25
-    OLD_325 = 3.25
-    NEW_325_HALF = 3.246
-    OLD_325_HALF = 3.246
-    NEW_4 = 4.0
-    OLD_4 = 4.18
-    NEW_4_HALF = 3.995
-    OLD_4_HALF = 4.175
+    new_2 = 2.125
+    new_275 = 2.75
+    old_275 = 2.75
+    new_275_half = 2.744
+    old_275_half = 2.74
+    new_325 = 3.25
+    old_325 = 3.25
+    new_325_half = 3.246
+    old_325_half = 3.246
+    new_4 = 4.0
+    old_4 = 4.18
+    new_4_half = 3.995
+    old_4_half = 4.175
+
+    NEW_2 = new_2
+    NEW_275 = new_275
+    OLD_275 = old_275
+    NEW_275_HALF = new_275_half
+    OLD_275_HALF = old_275_half
+    NEW_325 = new_325
+    OLD_325 = old_325
+    NEW_325_HALF = new_325_half
+    OLD_325_HALF = old_325_half
+    NEW_4 = new_4
+    OLD_4 = old_4
+    NEW_4_HALF = new_4_half
+    OLD_4_HALF = old_4_half
 
 
 @dataclass
@@ -85,7 +99,7 @@ class Drivetrain:
     left_motors: object | None = None
     right_motors: object | None = None
     track_width: float = 0.0
-    wheel_diameter: float | Omniwheel = Omniwheel.NEW_4
+    wheel_diameter: float | Omniwheel = Omniwheel.new_4
     rpm: float = 360.0
     horizontal_drift: float = 2.0
 
@@ -101,4 +115,3 @@ class OdomSensors:
     horizontal_1: object | None = None
     horizontal_2: object | None = None
     imu: object | None = None
-

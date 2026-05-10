@@ -21,11 +21,11 @@ class Path(list[Waypoint]):
 
     def to_python(self, variable_name: str = "path") -> str:
         rows = ",\n    ".join(
-            f"Waypoint({point.x!r}, {point.y!r}, {point.speed!r})" for point in self
+            f"waypoint({point.x!r}, {point.y!r}, {point.speed!r})" for point in self
         )
         return (
-            "from lemlib import Path, Waypoint\n\n"
-            f"{variable_name} = Path([\n"
+            "from lemlib import path, waypoint\n\n"
+            f"{variable_name} = path([\n"
             f"    {rows}\n"
             "])\n"
         )
@@ -64,4 +64,3 @@ def parse_lemlib_path(text: str) -> Path:
 
 def convert_lemlib_to_python(text: str, variable_name: str = "path") -> str:
     return parse_lemlib_path(text).to_python(variable_name)
-

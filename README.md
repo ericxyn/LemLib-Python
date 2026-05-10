@@ -4,13 +4,13 @@ LemLib Python is an early Python recreation of [LemLib](https://github.com/LemLi
 
 This repository is intentionally hardware-agnostic. It exposes the math and control surfaces in Python and lets robot projects provide motor/sensor adapters. That makes it useful for simulation, teaching, testing autonomous routines, and porting LemLib-style snippets before wiring them to a Python robotics runtime.
 
-## Included Functions
+## Included functions
 
-- `PID`, `ControllerSettings`, and exit-condition helpers
-- `Pose`, `Vector2D`, angle math, slew limiting, desaturation, and tangent-arc curvature
-- `Drivetrain`, `TrackingWheel`, and `TrackingWheelOdometry`
-- `Chassis` driver helpers: `tank`, `arcade`, `curvature`
-- `Chassis` motion helpers: `turn_to_heading`, `turn_to_point`, `move_to_point`, `move_to_pose`, and `follow`
+- `pid`, `controller_settings`, and exit-condition helpers
+- `pose`, `vector_2d`, angle math, slew limiting, desaturation, and tangent-arc curvature
+- `drivetrain`, `tracking_wheel`, and `tracking_wheel_odometry`
+- `chassis` driver helpers: `tank`, `arcade`, `curvature`
+- `chassis` motion helpers: `turn_to_heading`, `turn_to_point`, `move_to_point`, `move_to_pose`, and `follow`
 - LemLib path parsing plus Python conversion for path.jerryio exports
 - A docs-style website with all eight original tutorial topics adapted to Python
 
@@ -23,16 +23,16 @@ python -m pip install -e .
 ## Example Usage
 
 ```python
-from lemlib import Chassis, ControllerSettings, Drivetrain, OdomSensors, Pose
+from lemlib import chassis, controller_settings, drivetrain, odom_sensors, pose
 
-drivetrain = Drivetrain(track_width=10, wheel_diameter=4, rpm=360, horizontal_drift=2)
-lateral = ControllerSettings(kp=10, ki=0, kd=3, windup_range=3)
-angular = ControllerSettings(kp=2, ki=0, kd=10, windup_range=3)
+drive = drivetrain(track_width=10, wheel_diameter=4, rpm=360, horizontal_drift=2)
+lateral = controller_settings(kp=10, ki=0, kd=3, windup_range=3)
+angular = controller_settings(kp=2, ki=0, kd=10, windup_range=3)
 
-chassis = Chassis(drivetrain, lateral, angular, OdomSensors())
-chassis.set_pose(Pose(0, 0, 0))
+robot = chassis(drive, lateral, angular, odom_sensors())
+robot.set_pose(pose(0, 0, 0))
 
-signal = chassis.move_to_point(0, 48)
+signal = robot.move_to_point(0, 48)
 print(signal.left, signal.right)
 ```
 

@@ -326,18 +326,6 @@ class Chassis:
         _move(self.drivetrain.right_motors, signal.right)
         return signal
 
-    setPose = set_pose
-    getPose = get_pose
-    turnToHeading = turn_to_heading
-    turnToPoint = turn_to_point
-    swingToHeading = swing_to_heading
-    swingToPoint = swing_to_point
-    moveToPoint = move_to_point
-    moveToPose = move_to_pose
-    cancelMotion = cancel_motion
-    cancelAllMotions = cancel_all_motions
-    isInMotion = is_in_motion
-
 
 def _move(motors: object | None, value: float) -> None:
     if motors is None:
@@ -351,4 +339,3 @@ def _move(motors: object | None, value: float) -> None:
 def _brake(motors: object | None) -> None:
     if motors is not None and hasattr(motors, "brake"):
         motors.brake()
-

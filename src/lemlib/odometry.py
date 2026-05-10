@@ -66,7 +66,3 @@ class TrackingWheelOdometry:
             heading,
         )
         return self.pose
-
-    getPose = get_pose
-    setPose = set_pose
-

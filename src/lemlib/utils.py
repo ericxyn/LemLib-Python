@@ -11,14 +11,21 @@ from .geometry import Pose, Vector2D
 
 
 class AngularDirection(str, Enum):
-    CW_CLOCKWISE = "cw"
-    CCW_COUNTERCLOCKWISE = "ccw"
+    cw_clockwise = "cw"
+    ccw_counterclockwise = "ccw"
+
+    CW_CLOCKWISE = cw_clockwise
+    CCW_COUNTERCLOCKWISE = ccw_counterclockwise
 
 
 class SlewDirection(str, Enum):
-    INCREASING = "increasing"
-    DECREASING = "decreasing"
-    ALL = "all"
+    increasing = "increasing"
+    decreasing = "decreasing"
+    all = "all"
+
+    INCREASING = increasing
+    DECREASING = decreasing
+    ALL = all
 
 
 @dataclass(frozen=True)
@@ -55,9 +62,9 @@ def angle_error(
     """
 
     error = (sanitize_angle(target) - position) % 360
-    if direction == AngularDirection.CW_CLOCKWISE:
+    if direction == AngularDirection.cw_clockwise:
         return error
-    if direction == AngularDirection.CCW_COUNTERCLOCKWISE:
+    if direction == AngularDirection.ccw_counterclockwise:
         return error - 360 if error != 0 else 0
     return ((error + 180) % 360) - 180
 
@@ -67,7 +74,7 @@ def slew(
     current: float,
     max_change_rate: float,
     delta_time: float = 1.0,
-    direction_limit: SlewDirection = SlewDirection.ALL,
+    direction_limit: SlewDirection = SlewDirection.all,
 ) -> float:
     """Constrain change in a value over time."""
 
@@ -75,9 +82,9 @@ def slew(
         return target
 
     change = target - current
-    if direction_limit == SlewDirection.INCREASING and change < 0:
+    if direction_limit == SlewDirection.increasing and change < 0:
         return target
-    if direction_limit == SlewDirection.DECREASING and change > 0:
+    if direction_limit == SlewDirection.decreasing and change > 0:
         return target
 
     limit = abs(max_change_rate * delta_time)
@@ -126,4 +133,3 @@ def ema(previous: float, current: float, alpha: float) -> float:
     """Exponential moving average."""
 
     return alpha * current + (1 - alpha) * previous
-
