@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Clipboard, FileCode2, Menu, Moon, Play, Sun } from "lucide-react";
+import { ChevronDown, ChevronRight, Clipboard, FileCode2, Github, Menu, Moon, Play, Sun } from "lucide-react";
+import html2canvas from "html2canvas";
 import "./styles.css";
+import "./liquid.css";
 
 const samplePath = `0, 0, 80
 12, 18, 95
@@ -262,7 +264,6 @@ chassis.move_to_pose(120, 10, 0)`, "python"),
     title: "API Reference",
     group: "Reference",
     blocks: apiReferenceBlocks(),
-
   },
   {
     id: "converter",
@@ -594,16 +595,129 @@ function apiMember(name, text) {
   return { name, text };
 }
 
+const apiSections = apiReferenceBlocks().find((block) => block.type === "api-index").sections;
+const apiEntries = apiReferenceBlocks().filter((block) => block.type === "api-entry");
+const defaultApiId = slug(apiSections[0].items[0]);
+
 function getInitialPage() {
   const hash = window.location.hash.replace("#/", "");
   return pages.some((page) => page.id === hash) ? hash : "index";
 }
 
+const LIQUID_GL_SRC = "https://cdn.jsdelivr.net/gh/naughtyduk/liquidGL@main/scripts/liquidGL.js";
+const GITHUB_URL = "https://github.com/ericxyn/LemLib-Python";
+
 function App() {
   const [activeId, setActiveId] = useState(getInitialPage);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem("lemlib-theme") || "light");
+  const [activeApiId, setActiveApiId] = useState(defaultApiId);
+  const [expandedApiGroups, setExpandedApiGroups] = useState(() => (
+    apiSections.reduce((groups, section) => ({ ...groups, [section.title]: true }), {})
+  ));
+  const articleRef = useRef(null);
   const active = pages.find((page) => page.id === activeId) || pages[0];
   const grouped = useMemo(() => groupPages(pages), []);
+
+  useEffect(() => {
+    window.html2canvas = html2canvas;
+
+    let cancelled = false;
+    let retryId = 0;
+
+    function loadLiquidScript() {
+      if (typeof window.liquidGL === "function") return Promise.resolve();
+      if (window.__lemlibLiquidScriptPromise) return window.__lemlibLiquidScriptPromise;
+
+      window.__lemlibLiquidScriptPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = LIQUID_GL_SRC;
+        script.async = true;
+        script.dataset.liquidglScript = "true";
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("liquidGL failed to load"));
+        document.body.appendChild(script);
+      });
+
+      return window.__lemlibLiquidScriptPromise;
+    }
+
+    function refreshLiquidGlass() {
+      const renderer = window.__liquidGLRenderer__;
+      renderer?.lenses?.forEach((lens) => lens.updateMetrics?.());
+      renderer?.captureSnapshot?.();
+      renderer?.render?.();
+    }
+
+    function initLiquidGlass(attempt = 0) {
+      if (cancelled) return;
+      if (typeof window.liquidGL !== "function") {
+        if (attempt < 40) {
+          retryId = window.setTimeout(() => initLiquidGlass(attempt + 1), 50);
+        }
+        return;
+      }
+
+      if (window.__lemlibLiquidGlass) {
+        refreshLiquidGlass();
+        return;
+      }
+
+      window.__lemlibLiquidGlass = window.liquidGL({
+        target: ".liquidGL",
+        snapshot: "body",
+        resolution: Math.min(window.devicePixelRatio || 1, 2),
+        refraction: 0.018,
+        bevelDepth: 0.065,
+        bevelWidth: 0.16,
+        frost: 1.25,
+        shadow: true,
+        specular: true,
+        reveal: "fade",
+        tilt: true,
+        tiltFactor: 2,
+        magnify: 1.015,
+        on: {
+          init() {
+            document.documentElement.classList.add("liquid-ready");
+          },
+        },
+      });
+    }
+
+    loadLiquidScript().then(() => initLiquidGlass()).catch((error) => {
+      console.warn(error);
+    });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(retryId);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("lemlib-theme", theme);
+
+    const refreshId = window.setTimeout(() => {
+      const renderer = window.__liquidGLRenderer__;
+      renderer?.captureSnapshot?.();
+      renderer?.render?.();
+    }, 180);
+
+    return () => window.clearTimeout(refreshId);
+  }, [theme]);
+
+  useEffect(() => {
+    const refreshId = window.setTimeout(() => {
+      const renderer = window.__liquidGLRenderer__;
+      renderer?.lenses?.forEach((lens) => lens.updateMetrics?.());
+      renderer?.captureSnapshot?.();
+      renderer?.render?.();
+    }, 120);
+
+    return () => window.clearTimeout(refreshId);
+  }, [activeId]);
 
   useEffect(() => {
     function handleHashChange() {
@@ -614,21 +728,45 @@ function App() {
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
+  function scrollArticleTop() {
+    articleRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function expandAllApiGroups() {
+    setExpandedApiGroups(apiSections.reduce((groups, section) => ({ ...groups, [section.title]: true }), {}));
+  }
+
   function navigate(id) {
     setActiveId(id);
     window.location.hash = `/${id}`;
+    if (id === "api") {
+      setActiveApiId(defaultApiId);
+      expandAllApiGroups();
+      requestAnimationFrame(scrollArticleTop);
+    }
     setMenuOpen(false);
+  }
+
+  function openApiEntry(entryId) {
+    setActiveId("api");
+    setActiveApiId(entryId);
+    window.location.hash = "/api";
+    requestAnimationFrame(scrollArticleTop);
+  }
+
+  function toggleApiGroup(title) {
+    setExpandedApiGroups((groups) => ({ ...groups, [title]: !groups[title] }));
   }
 
   return (
     <div className="app-shell">
-      <header className="mobile-topbar">
+      <header className="mobile-topbar liquidGL">
         <button className="icon-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle contents">
           <Menu size={18} />
         </button>
         <span>LemLib Python documentation</span>
       </header>
-      <aside className={`sidebar ${menuOpen ? "open" : ""}`}>
+      <aside className={`sidebar liquidGL ${menuOpen ? "open" : ""}`}>
         <div className="brand" onClick={() => navigate("index")}>
           <div className="brand-mark">L</div>
           <div>
@@ -636,40 +774,67 @@ function App() {
             <span>documentation</span>
           </div>
         </div>
+        <div className="side-actions" aria-label="Site actions">
+          <button
+            className={theme === "light" ? "active" : ""}
+            onClick={() => setTheme("light")}
+            aria-label="Light mode"
+            title="Light mode"
+          >
+            <Sun size={17} />
+          </button>
+          <button
+            className={theme === "dark" ? "active" : ""}
+            onClick={() => setTheme("dark")}
+            aria-label="Dark mode"
+            title="Dark mode"
+          >
+            <Moon size={17} />
+          </button>
+          <a href={GITHUB_URL} target="_blank" rel="noreferrer" aria-label="GitHub repository" title="GitHub repository">
+            <Github size={17} />
+          </a>
+        </div>
         <nav>
           {Object.entries(grouped).map(([group, groupPages]) => (
             <section key={group} className="nav-section">
               <p>{group}</p>
               {groupPages.map((page) => (
-                <button
-                  key={page.id}
-                  className={page.id === activeId ? "active" : ""}
-                  onClick={() => navigate(page.id)}
-                >
-                  {page.title}
-                </button>
+                <React.Fragment key={page.id}>
+                  <button
+                    className={page.id === activeId ? "active" : ""}
+                    onClick={() => navigate(page.id)}
+                  >
+                    {page.title}
+                  </button>
+                  {page.id === "api" && activeId === "api" && (
+                    <ApiSidebarTree
+                      sections={apiSections}
+                      activeApiId={activeApiId}
+                      expandedGroups={expandedApiGroups}
+                      onToggleGroup={toggleApiGroup}
+                      onOpenEntry={openApiEntry}
+                    />
+                  )}
+                </React.Fragment>
               ))}
             </section>
           ))}
         </nav>
       </aside>
       <main className="content-wrap">
-        <div className="doc-toolbar">
-          <button className="toolbar-button">
-            <Sun size={15} />
-            Light mode
-          </button>
-          <button className="toolbar-button">
-            <Moon size={15} />
-            Auto
-          </button>
-        </div>
-        <article className="doc-article">
+        <article className="doc-article liquidGL" ref={articleRef}>
           <h1>{active.title}</h1>
-          {active.converter ? <Converter /> : <Blocks blocks={active.blocks} />}
+          {active.converter ? (
+            <Converter />
+          ) : active.id === "api" ? (
+            <ApiReference activeApiId={activeApiId} onOpenEntry={openApiEntry} />
+          ) : (
+            <Blocks blocks={active.blocks} />
+          )}
         </article>
       </main>
-      <aside className="toc">
+      <aside className="toc liquidGL">
         <p>On this page</p>
         {(active.blocks || [])
           .filter((block) => block.type === "h")
@@ -697,6 +862,104 @@ function App() {
           </a>
         )}
       </aside>
+    </div>
+  );
+}
+
+function ApiSidebarTree({ sections, activeApiId, expandedGroups, onToggleGroup, onOpenEntry }) {
+  return (
+    <div className="api-sidebar-tree">
+      {sections.map((section) => (
+        <div className="api-sidebar-group" key={section.title}>
+          <button
+            className="api-sidebar-topic"
+            onClick={() => onToggleGroup(section.title)}
+            aria-expanded={Boolean(expandedGroups[section.title])}
+          >
+            <span>{section.title}</span>
+            {expandedGroups[section.title] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          </button>
+          {expandedGroups[section.title] && (
+            <div className="api-sidebar-children">
+              {section.items.map((item) => {
+                const entryId = slug(item);
+                return (
+                  <button
+                    key={item}
+                    className={entryId === activeApiId ? "active" : ""}
+                    onClick={() => onOpenEntry(entryId)}
+                  >
+                    {item}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ApiReference({ activeApiId, onOpenEntry }) {
+  const selected = apiEntries.find((entry) => slug(entry.name) === activeApiId) || apiEntries[0];
+
+  return (
+    <div className="api-reference">
+      <p className="api-reference-intro">
+        This reference mirrors LemLib's API layout while documenting the Python package surface. Pick a function or class from the index, then use the focused card for the signature, behavior, methods, and aliases.
+      </p>
+      <section className="api-focus-card" id={slug(selected.name)} aria-live="polite">
+        <div className="api-focus-header">
+          <div>
+            <span className="api-focus-kicker">Selected Reference</span>
+            <h2><code>{selected.name}</code></h2>
+          </div>
+        </div>
+        <pre className="api-signature"><code>{selected.signature}</code></pre>
+        <p>{selected.description}</p>
+        {selected.members.length > 0 && (
+          <dl className="api-detail-list">
+            {selected.members.map((member) => (
+              <React.Fragment key={member.name}>
+                <dt><code>{member.name}</code></dt>
+                <dd>{member.text}</dd>
+              </React.Fragment>
+            ))}
+          </dl>
+        )}
+        {selected.aliases.length > 0 && (
+          <p className="api-aliases">
+            <strong>Aliases:</strong>{" "}
+            {selected.aliases.map((alias, aliasIndex) => (
+              <React.Fragment key={alias}>
+                <code>{alias}</code>{aliasIndex < selected.aliases.length - 1 ? " " : ""}
+              </React.Fragment>
+            ))}
+          </p>
+        )}
+      </section>
+      <div className="reference-index api-reference-index">
+        {apiSections.map((section) => (
+          <section key={section.title} id={slug(section.title)}>
+            <h3>{section.title}</h3>
+            <div className="reference-link-list">
+              {section.items.map((item) => {
+                const entryId = slug(item);
+                return (
+                  <button
+                    key={item}
+                    className={`reference-link ${entryId === slug(selected.name) ? "active" : ""}`}
+                    onClick={() => onOpenEntry(entryId)}
+                  >
+                    {item}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
     </div>
   );
 }
