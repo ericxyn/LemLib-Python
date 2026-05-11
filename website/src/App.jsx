@@ -52,8 +52,8 @@ print(robot.move_to_point(0, 48))`, "python"),
     group: "Home",
     blocks: [
       p("Install the package from a local checkout while the project is in alpha."),
-      code(`git clone https://github.com/ericxyn/accudrive.git
-cd accudrive
+      code(`git clone https://github.com/ericxyn/ACCUDRIVE.git
+cd ACCUDRIVE
 python -m pip install -e .`, "bash"),
       p("The documentation web app lives in the website folder."),
       code(`cd website
@@ -485,7 +485,7 @@ function getInitialPage() {
 }
 
 const LIQUID_GL_SRC = "https://cdn.jsdelivr.net/gh/naughtyduk/liquidGL@main/scripts/liquidGL.js";
-const GITHUB_URL = "https://github.com/ericxyn/accudrive";
+const GITHUB_URL = "https://github.com/ericxyn/ACCUDRIVE";
 
 function App() {
   const [activeId, setActiveId] = useState(getInitialPage);

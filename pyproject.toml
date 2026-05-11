@@ -28,9 +28,9 @@ dependencies = []
 dev = []
 
 [project.urls]
-Homepage = "https://github.com/ericxyn/accudrive"
-Documentation = "https://github.com/ericxyn/accudrive/tree/main/website"
-Source = "https://github.com/ericxyn/accudrive"
+Homepage = "https://github.com/ericxyn/ACCUDRIVE"
+Documentation = "https://github.com/ericxyn/ACCUDRIVE/tree/main/website"
+Source = "https://github.com/ericxyn/ACCUDRIVE"
 
 [tool.setuptools.packages.find]
 where = ["src"]
