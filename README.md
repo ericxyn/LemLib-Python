@@ -64,5 +64,5 @@ It recreates the LemLib documentation structure in a Furo/Read the Docs-like lig
 
 ## Attribution
 
-This project is a Python port inspired by LemLib. Portions of the API shape, algorithms, and documentation structure are adapted from LemLib, which is MIT licensed by Liam Teale and LemLib contributors. See `NOTICE.md` and `LICENSE`.
+This project is a Python port inspired by LemLib but completely independent of it. Many functions of LemLib can be found in ACCUDRIVE as a python counterpart, however these were developed separately. See `NOTICE.md` and `LICENSE`.
 
