@@ -10,7 +10,7 @@ from .chassis import (
     TurnToHeadingParams,
     TurnToPointParams,
 )
-from .config import ControllerSettings, Drivetrain, ExitCondition, Omniwheel, OdomSensors
+from .config import ControllerSettings, Drivetrain, ExitCondition, Omniwheel, OdomSensors, Wheel
 from .drive_curve import DriveCurve, ExpoDriveCurve
 from .geometry import Pose, Vector2D
 from .odometry import TrackingWheel, TrackingWheelOdometry
@@ -58,6 +58,7 @@ turn_to_heading_params = TurnToHeadingParams
 turn_to_point_params = TurnToPointParams
 vector_2d = Vector2D
 waypoint = Waypoint
+wheel = Wheel
 
 __all__ = [
     "angle_error",
@@ -97,5 +98,6 @@ __all__ = [
     "turn_to_point_params",
     "vector_2d",
     "waypoint",
+    "wheel",
     "slew",
 ]

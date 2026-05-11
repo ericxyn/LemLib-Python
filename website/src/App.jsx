@@ -25,9 +25,15 @@ const pages = [
       p("Welcome to the documentation for ACCUDRIVE. This site contains everything you need to use or contribute to the Python recreation of LemLib."),
       p("If you are new, start with the introductory tutorials. If you already know what you are doing, jump to the API reference or the LemLib path converter."),
       callout("note", "Port Status", "This is an initial hardware-agnostic Python port. The math, path format, and control surfaces are available now; real robot projects should provide motor and sensor adapters for their runtime."),
-      code(`from accudrive import chassis, controller_settings, drivetrain, odom_sensors, pose
+      code(`from accudrive import chassis, controller_settings, drivetrain, odom_sensors, omniwheel, pose
 
-drive = drivetrain(track_width=10, wheel_diameter=4, rpm=360)
+drive = drivetrain(
+    track_width=10,
+    wheel_diameter=omniwheel.new_325,
+    wheels_per_side=3,
+    wheel_sequence=["omni", "traction", "omni"],
+    rpm=360,
+)
 lateral = controller_settings(10, 0, 3, 3, 1, 100, 3, 500, 20)
 angular = controller_settings(2, 0, 10, 3, 1, 100, 3, 500, 0)
 
@@ -87,7 +93,7 @@ npm run dev`, "bash"),
 python -m pip install -e .`, "bash"),
     h("First Import"),
     p("The Python package uses lower_snake_case for public functions and variables."),
-    code(`from accudrive import chassis, controller_settings, drivetrain, odom_sensors, pose`, "python"),
+    code(`from accudrive import chassis, controller_settings, drivetrain, odom_sensors, omniwheel, pose`, "python"),
     h("Project Shape"),
     p("A normal project has a robot configuration module, an autonomous module, and optional path files exported from path.jerryio."),
     code(`robot/
@@ -114,7 +120,7 @@ python -m pip install -e .`, "bash"),
     def brake(self):
         self.history.append(0)`, "python"),
     h("drivetrain"),
-    code(`from accudrive import drivetrain, omniwheel
+    code(`from accudrive import drivetrain, omniwheel, wheel
 
 left_motors = MotorGroup("left")
 right_motors = MotorGroup("right")
@@ -123,9 +129,22 @@ drive = drivetrain(
     left_motors=left_motors,
     right_motors=right_motors,
     track_width=10,
-    wheel_diameter=omniwheel.new_4,
+    wheel_diameter=omniwheel.new_325,
+    wheels_per_side=3,
+    wheel_sequence=["omni", "traction", "omni"],
     rpm=360,
     horizontal_drift=2,
+)`, "python"),
+    h("Wheel Order"),
+    p("If each drivetrain side mixes wheel types, set wheels_per_side and list the wheel_sequence in the physical order used on one side, such as front-to-back."),
+    code(`mixed_drive = drivetrain(
+    track_width=10,
+    wheels_per_side=3,
+    wheel_sequence=[
+        wheel("omni", omniwheel.new_325),
+        wheel("traction", 3.25),
+        wheel("omni", omniwheel.new_325),
+    ],
 )`, "python"),
     h("Odometry Sensors"),
     p("Use odom_sensors to keep the same shape as LemLib. The initial port does not require real hardware objects; pass adapters when your runtime has them."),
@@ -360,6 +379,7 @@ function apiReferenceBlocks() {
           "move_to_point_params",
           "move_to_pose_params",
           "follow_params",
+          "wheel",
           "drivetrain",
           "odom_sensors",
           "controller_settings",
@@ -430,7 +450,8 @@ function apiReferenceBlocks() {
     apiEntry("move_to_point_params", "move_to_point_params(forwards=True, max_lateral_speed=127.0, min_lateral_speed=0.0, max_angular_speed=127.0, lateral_slew=0.0, angular_slew=0.0, early_exit_range=0.0)", "Parameters for move_to_point.", [param("forwards", "bool", "true", "Drive toward the point with the front of the robot."), param("max_lateral_speed", "float", "127.0", "Maximum forward/backward output."), param("min_lateral_speed", "float", "0.0", "Minimum non-zero lateral output."), param("max_angular_speed", "float", "127.0", "Maximum turning output."), param("lateral_slew", "float", "0.0", "Rate limit for lateral output."), param("angular_slew", "float", "0.0", "Rate limit for angular output."), param("early_exit_range", "float", "0.0", "Distance window where a caller may chain into the next motion early.")], "parameter object"),
     apiEntry("move_to_pose_params", "move_to_pose_params(..., lead=0.6, horizontal_drift=None)", "Parameters for move_to_pose.", [param("forwards", "bool", "true", "Drive toward the pose with the front of the robot."), param("max_lateral_speed", "float", "127.0", "Maximum forward/backward output."), param("min_lateral_speed", "float", "0.0", "Minimum non-zero lateral output."), param("max_angular_speed", "float", "127.0", "Maximum turning output."), param("lateral_slew", "float", "0.0", "Rate limit for lateral output."), param("angular_slew", "float", "0.0", "Rate limit for angular output."), param("early_exit_range", "float", "0.0", "Distance window where a caller may chain into the next motion early."), param("lead", "float", "0.6", "How far the boomerang carrot point leads the target pose."), param("horizontal_drift", "float | none", "none", "Drift constant used to limit slip speed through curves.")], "parameter object"),
     apiEntry("follow_params", "follow_params(forwards=True, lateral_slew=0.0)", "Parameters for follow.", [param("forwards", "bool", "true", "Follow the path with the front of the robot."), param("lateral_slew", "float", "0.0", "Rate limit applied to path-following velocity.")], "parameter object"),
-    apiEntry("drivetrain", "drivetrain(left_motors=None, right_motors=None, track_width=0.0, wheel_diameter=omniwheel.new_4, rpm=360.0, horizontal_drift=2.0)", "Stores tank-drive geometry and motor adapters.", [param("left_motors", "object | callable | none", "none", "Adapter for the left motors."), param("right_motors", "object | callable | none", "none", "Adapter for the right motors."), param("track_width", "float", "0.0", "Distance between left and right wheel contact lines."), param("wheel_diameter", "float | omniwheel", "omniwheel.new_4", "Drive wheel diameter."), param("rpm", "float", "360.0", "Drive motor rpm."), param("horizontal_drift", "float", "2.0", "Slip/drift tuning constant for curved pose motions.")], "configuration object"),
+    apiEntry("wheel", "wheel(kind, diameter)", "One drivetrain wheel entry used by ordered wheel sequences.", [param("kind", "str", "required", "Wheel type label, such as 'omni' or 'traction'."), param("diameter", "float | omniwheel", "required", "Wheel diameter or omniwheel preset.")], "data object"),
+    apiEntry("drivetrain", "drivetrain(left_motors=None, right_motors=None, track_width=0.0, wheel_diameter=omniwheel.new_4, rpm=360.0, horizontal_drift=2.0, wheels_per_side=None, wheel_sequence=None, left_wheels=None, right_wheels=None)", "Stores tank-drive geometry, motor adapters, and ordered wheel layouts.", [param("left_motors", "object | callable | none", "none", "Adapter for the left motors."), param("right_motors", "object | callable | none", "none", "Adapter for the right motors."), param("track_width", "float", "0.0", "Distance between left and right wheel contact lines."), param("wheel_diameter", "float | omniwheel", "omniwheel.new_4", "Default diameter used when no explicit wheel diameter is provided."), param("rpm", "float", "360.0", "Drive motor rpm."), param("horizontal_drift", "float", "2.0", "Slip/drift tuning constant for curved pose motions."), param("wheels_per_side", "int | none", "none", "Number of wheels on each drivetrain side. Explicit wheel sequences must match this count."), param("wheel_sequence", "list[str | wheel] | none", "none", "Ordered wheel types shared by both sides, for example ['omni', 'traction', 'omni']."), param("left_wheels", "list[str | wheel] | none", "none", "Ordered wheel sequence for the left side when it differs from wheel_sequence."), param("right_wheels", "list[str | wheel] | none", "none", "Ordered wheel sequence for the right side when it differs from wheel_sequence.")], "configuration object"),
     apiEntry("odom_sensors", "odom_sensors(vertical_1=None, vertical_2=None, horizontal_1=None, horizontal_2=None, imu=None)", "Container for odometry sensor adapters.", [param("vertical_1", "object | none", "none", "Primary vertical tracking sensor."), param("vertical_2", "object | none", "none", "Secondary vertical tracking sensor."), param("horizontal_1", "object | none", "none", "Primary horizontal tracking sensor."), param("horizontal_2", "object | none", "none", "Secondary horizontal tracking sensor."), param("imu", "object | none", "none", "Heading sensor adapter.")], "configuration object"),
     apiEntry("controller_settings", "controller_settings(kp, ki, kd, windup_range=0.0, small_error=0.0, small_timeout=0.0, large_error=0.0, large_timeout=0.0, slew=0.0)", "PID and exit-condition configuration.", [param("kp", "float", "required", "Proportional gain."), param("ki", "float", "required", "Integral gain."), param("kd", "float", "required", "Derivative gain."), param("windup_range", "float", "0.0", "Error range where integral is allowed to accumulate."), param("small_error", "float", "0.0", "Tight settling error threshold."), param("small_timeout", "float", "0.0", "Time in milliseconds required inside small_error."), param("large_error", "float", "0.0", "Loose settling error threshold."), param("large_timeout", "float", "0.0", "Time in milliseconds required inside large_error."), param("slew", "float", "0.0", "Default slew rate for motions using this controller.")], "configuration object"),
     apiEntry("exit_condition", "exit_condition(small_error=0.0, small_timeout=0.0, large_error=0.0, large_timeout=0.0)", "Tracks small-error and large-error settling windows.", [param("small_error", "float", "0.0", "Tight settling error threshold."), param("small_timeout", "float", "0.0", "Seconds required inside small_error."), param("large_error", "float", "0.0", "Loose settling error threshold."), param("large_timeout", "float", "0.0", "Seconds required inside large_error.")], "configuration object"),

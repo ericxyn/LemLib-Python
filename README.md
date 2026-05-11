@@ -10,7 +10,7 @@ This repository is intentionally hardware-agnostic. It exposes the math and cont
 
 - `pid`, `controller_settings`, and exit-condition helpers
 - `pose`, `vector_2d`, angle math, slew limiting, desaturation, and tangent-arc curvature
-- `drivetrain`, `tracking_wheel`, and `tracking_wheel_odometry`
+- `drivetrain`, `wheel`, `tracking_wheel`, and `tracking_wheel_odometry`
 - `chassis` driver helpers: `tank`, `arcade`, `curvature`
 - `chassis` motion helpers: `turn_to_heading`, `turn_to_point`, `move_to_point`, `move_to_pose`, and `follow`
 - LemLib path parsing plus ACCUDRIVE conversion for path.jerryio exports
@@ -25,9 +25,16 @@ python -m pip install -e .
 ## Example Usage
 
 ```python
-from accudrive import chassis, controller_settings, drivetrain, odom_sensors, pose
+from accudrive import chassis, controller_settings, drivetrain, odom_sensors, omniwheel, pose
 
-drive = drivetrain(track_width=10, wheel_diameter=4, rpm=360, horizontal_drift=2)
+drive = drivetrain(
+    track_width=10,
+    wheel_diameter=omniwheel.new_325,
+    wheels_per_side=3,
+    wheel_sequence=["omni", "traction", "omni"],
+    rpm=360,
+    horizontal_drift=2,
+)
 lateral = controller_settings(kp=10, ki=0, kd=3, windup_range=3)
 angular = controller_settings(kp=2, ki=0, kd=10, windup_range=3)
 

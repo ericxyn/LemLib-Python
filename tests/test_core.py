@@ -9,10 +9,12 @@ from accudrive import (
     drivetrain,
     get_signed_tangent_arc_curvature,
     odom_sensors,
+    omniwheel,
     parse_lemlib_path,
     pid,
     pose,
     slew,
+    wheel,
 )
 
 
@@ -57,6 +59,46 @@ class CoreTests(unittest.TestCase):
         self.assertGreater(signal.left, 0)
         self.assertGreater(signal.right, 0)
         self.assertTrue(math.isfinite(signal.left))
+
+    def test_drivetrain_accepts_ordered_mixed_wheels_per_side(self):
+        drive = drivetrain(
+            track_width=10,
+            wheel_diameter=omniwheel.new_325,
+            wheels_per_side=3,
+            wheel_sequence=["omni", "traction", "omni"],
+        )
+
+        self.assertEqual(drive.wheels_per_side, 3)
+        self.assertEqual([item.kind for item in drive.left_wheels], ["omni", "traction", "omni"])
+        self.assertEqual([item.kind for item in drive.right_wheels], ["omni", "traction", "omni"])
+        self.assertEqual(drive.left_wheel_sizes, (3.25, 3.25, 3.25))
+        self.assertAlmostEqual(drive.wheel_size, 3.25)
+
+    def test_drivetrain_accepts_explicit_wheel_objects(self):
+        drive = drivetrain(
+            wheels_per_side=3,
+            wheel_sequence=[
+                wheel("omni", omniwheel.new_325),
+                wheel("traction", 3.25),
+                wheel("omni", omniwheel.new_325),
+            ],
+        )
+
+        self.assertEqual(drive.wheel_sequence[1].kind, "traction")
+        self.assertAlmostEqual(drive.average_wheel_size, 3.25)
+
+    def test_drivetrain_validates_wheel_count(self):
+        with self.assertRaises(ValueError):
+            drivetrain(wheels_per_side=3, wheel_sequence=["omni", "traction"])
+
+    def test_drivetrain_infers_side_specific_wheel_count(self):
+        drive = drivetrain(
+            left_wheels=["omni", "traction", "omni"],
+            right_wheels=["omni", "traction", "omni"],
+        )
+
+        self.assertEqual(drive.wheels_per_side, 3)
+        self.assertEqual([item.kind for item in drive.wheel_sequence], ["omni", "omni", "omni"])
 
 
 if __name__ == "__main__":
