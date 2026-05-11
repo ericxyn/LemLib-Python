@@ -51,11 +51,11 @@ print(robot.move_to_point(0, 48))`, "python"),
     title: "Download",
     group: "Home",
     blocks: [
-      p("Install the package from a local checkout while the project is in alpha."),
+      p("Install the package from a local checkout while the project is in alpha. Run these commands in a terminal from the folder where you keep local projects."),
       code(`git clone https://github.com/ericxyn/ACCUDRIVE.git
 cd ACCUDRIVE
 python -m pip install -e .`, "bash"),
-      p("The documentation web app lives in the website folder."),
+      p("To run the documentation website locally, stay in the cloned ACCUDRIVE folder and run these terminal commands."),
       code(`cd website
 npm install
 npm run dev`, "bash"),
@@ -81,7 +81,7 @@ npm run dev`, "bash"),
   },
   tutorial("1 - Getting Started", "1_getting_started", [
     h("Installation"),
-    p("Create a Python project and install ACCUDRIVE in editable mode. Editable installs are useful while the package is still young because examples and tests can run against your local source tree."),
+    p("From a terminal opened at your ACCUDRIVE project folder, create a Python environment and install ACCUDRIVE in editable mode. Editable installs are useful while the package is still young because examples and tests can run against your local source tree."),
     code(`python -m venv .venv
 .venv\\Scripts\\activate
 python -m pip install -e .`, "bash"),
@@ -888,12 +888,7 @@ function Blocks({ blocks }) {
         }
         if (block.type === "h") return <h2 id={slug(block.text)} key={index}>{block.text}</h2>;
         if (block.type === "code") {
-          return (
-            <div className="code-wrap" key={index}>
-              <span>{block.lang}</span>
-              <pre><code>{block.text}</code></pre>
-            </div>
-          );
+          return <CodeBlock block={block} key={index} />;
         }
         if (block.type === "list") {
           return (
@@ -959,6 +954,49 @@ function Blocks({ blocks }) {
       })}
     </>
   );
+}
+
+function CodeBlock({ block }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copyCode() {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(block.text);
+      } else {
+        fallbackCopy(block.text);
+      }
+    } catch {
+      fallbackCopy(block.text);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1600);
+  }
+
+  return (
+    <div className="code-wrap">
+      <div className="code-header">
+        <span>{block.lang}</span>
+        <button type="button" className="code-copy-button" onClick={copyCode} aria-label={`Copy ${block.lang} code`}>
+          <Clipboard size={14} />
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <pre><code>{block.text}</code></pre>
+    </div>
+  );
+}
+
+function fallbackCopy(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
 }
 
 function Converter() {
