@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lemlib-python"
+name = "accudrive"
 version = "0.1.0"
-description = "A Python port of LemLib's motion-control helpers, path format, and documentation examples."
+description = "accudrive robotics motion-control helpers, LemLib path conversion, and documentation examples."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -28,13 +28,12 @@ dependencies = []
 dev = []
 
 [project.urls]
-Homepage = "https://github.com/ericxyn/LemLib-Python"
-Documentation = "https://github.com/ericxyn/LemLib-Python/tree/main/website"
-Source = "https://github.com/ericxyn/LemLib-Python"
+Homepage = "https://github.com/ericxyn/accudrive"
+Documentation = "https://github.com/ericxyn/accudrive/tree/main/website"
+Source = "https://github.com/ericxyn/accudrive"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-lemlib = ["py.typed"]
-
+accudrive = ["py.typed"]

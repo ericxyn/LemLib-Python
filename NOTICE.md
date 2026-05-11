@@ -1,6 +1,6 @@
 # Notices
 
-LemLib Python is an independent Python port inspired by the upstream LemLib project.
+accudrive is an independent Python port inspired by the upstream LemLib project.
 
 Upstream project:
 

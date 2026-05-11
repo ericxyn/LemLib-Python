@@ -1,4 +1,4 @@
-"""Python recreation of LemLib's robotics control helpers."""
+"""accudrive robotics control helpers."""
 
 from .chassis import (
     Chassis,
@@ -14,7 +14,7 @@ from .config import ControllerSettings, Drivetrain, ExitCondition, Omniwheel, Od
 from .drive_curve import DriveCurve, ExpoDriveCurve
 from .geometry import Pose, Vector2D
 from .odometry import TrackingWheel, TrackingWheelOdometry
-from .paths import Path, Waypoint, convert_lemlib_to_python, parse_lemlib_path
+from .paths import Path, Waypoint, convert_lemlib_to_accudrive, parse_lemlib_path
 from .pid import Gains, PID
 from .utils import (
     AngularDirection,
@@ -66,7 +66,7 @@ __all__ = [
     "chassis",
     "constrain_power",
     "controller_settings",
-    "convert_lemlib_to_python",
+    "convert_lemlib_to_accudrive",
     "deg_to_rad",
     "desaturate",
     "drive_curve",

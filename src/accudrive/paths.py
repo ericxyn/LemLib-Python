@@ -1,4 +1,4 @@
-"""LemLib path parsing and conversion helpers."""
+"""LemLib path parsing and accudrive conversion helpers."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ class Path(list[Waypoint]):
             f"waypoint({point.x!r}, {point.y!r}, {point.speed!r})" for point in self
         )
         return (
-            "from lemlib import path, waypoint\n\n"
+            "from accudrive import path, waypoint\n\n"
             f"{variable_name} = path([\n"
             f"    {rows}\n"
             "])\n"
@@ -62,5 +62,5 @@ def parse_lemlib_path(text: str) -> Path:
     return path
 
 
-def convert_lemlib_to_python(text: str, variable_name: str = "path") -> str:
+def convert_lemlib_to_accudrive(text: str, variable_name: str = "path") -> str:
     return parse_lemlib_path(text).to_python(variable_name)

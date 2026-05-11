@@ -3,7 +3,7 @@
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url("/LemLib-Python/fonts/montserrat/Montserrat-VariableFont_wght.ttf") format("truetype");
+  src: url("/accudrive/fonts/montserrat/Montserrat-VariableFont_wght.ttf") format("truetype");
 }
 
 @font-face {
@@ -11,7 +11,7 @@
   font-style: italic;
   font-weight: 100 900;
   font-display: swap;
-  src: url("/LemLib-Python/fonts/montserrat/Montserrat-Italic-VariableFont_wght.ttf") format("truetype");
+  src: url("/accudrive/fonts/montserrat/Montserrat-Italic-VariableFont_wght.ttf") format("truetype");
 }
 
 :root {
