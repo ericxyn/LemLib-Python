@@ -1,4 +1,4 @@
-"""accudrive robotics control helpers."""
+"""ACCUDRIVE robotics control helpers."""
 
 from .chassis import (
     Chassis,

@@ -1,4 +1,4 @@
-"""LemLib path parsing and accudrive conversion helpers."""
+"""LemLib path parsing and ACCUDRIVE conversion helpers."""
 
 from __future__ import annotations
 

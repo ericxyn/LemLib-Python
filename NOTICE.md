@@ -1,6 +1,6 @@
 # Notices
 
-accudrive is an independent Python port inspired by the upstream LemLib project.
+ACCUDRIVE is an independent Python port inspired by the upstream LemLib project.
 
 Upstream project:
 
@@ -10,4 +10,3 @@ Upstream project:
 - Copyright: 2024 Liam Teale and LemLib contributors
 
 The API shape, tutorial structure, and several control algorithms are adapted from the upstream project. Python implementation details, packaging, tests, and the browser converter were created for this repository.
-

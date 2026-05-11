@@ -185,7 +185,7 @@ html[data-theme="dark"] .app-shell::before {
 }
 
 .brand-mark {
-  background: linear-gradient(145deg, #64d8ff, #82e1a2 82%);
+  background: rgba(255, 255, 255, 0.38);
   box-shadow: 0 12px 24px rgba(8, 127, 170, 0.24);
 }
 
@@ -654,4 +654,16 @@ html[data-theme="dark"] .callout {
   .api-param-card {
     min-height: 0;
   }
+}
+
+.home-logo-panel {
+  background: rgba(255, 255, 255, 0.36);
+  border-color: rgba(255, 255, 255, 0.62);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 18px 42px rgba(20, 80, 110, 0.08);
+}
+
+.home-logo {
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  object-position: center;
 }

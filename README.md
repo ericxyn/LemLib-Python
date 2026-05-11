@@ -1,5 +1,7 @@
 # ACCUDRIVE
 
+![ACCUDRIVE logo](website/public/accudrive-banner.png)
+
 ACCUDRIVE is a Python recreation of [LemLib](https://github.com/LemLib/LemLib): PID, odometry math, tank-drive motion helpers, driver control curves, pure pursuit path utilities, and a path.jerryio LemLib-format converter.
 
 This repository is intentionally hardware-agnostic. It exposes the math and control surfaces in Python and lets robot projects provide motor/sensor adapters. That makes it useful for simulation, teaching, testing autonomous routines, and porting LemLib-style snippets before wiring them to a Python robotics runtime.
@@ -11,7 +13,7 @@ This repository is intentionally hardware-agnostic. It exposes the math and cont
 - `drivetrain`, `tracking_wheel`, and `tracking_wheel_odometry`
 - `chassis` driver helpers: `tank`, `arcade`, `curvature`
 - `chassis` motion helpers: `turn_to_heading`, `turn_to_point`, `move_to_point`, `move_to_pose`, and `follow`
-- LemLib path parsing plus accudrive conversion for path.jerryio exports
+- LemLib path parsing plus ACCUDRIVE conversion for path.jerryio exports
 - A docs-style website with all eight original tutorial topics adapted to Python
 
 ## Local Installation
@@ -36,7 +38,7 @@ signal = robot.move_to_point(0, 48)
 print(signal.left, signal.right)
 ```
 
-## Conversion of path.jerryio LemLib format to accudrive path
+## Conversion of path.jerryio LemLib format to ACCUDRIVE path
 
 ```python
 from accudrive.paths import convert_lemlib_to_accudrive

@@ -5,6 +5,10 @@ import html2canvas from "html2canvas";
 import "./styles.css";
 import "./liquid.css";
 
+const ASSET_BASE = import.meta.env.BASE_URL;
+const ACCUDRIVE_ICON = `${ASSET_BASE}accudrive-logo.png`;
+const ACCUDRIVE_BANNER = `${ASSET_BASE}accudrive-banner.png`;
+
 const samplePath = `0, 0, 80
 12, 18, 95
 24, 24, 70
@@ -17,7 +21,8 @@ const pages = [
     title: "Documentation Home",
     group: "Home",
     blocks: [
-      p("Welcome to the documentation for accudrive. This site contains everything you need to use or contribute to the Python recreation of LemLib."),
+      logoBlock(),
+      p("Welcome to the documentation for ACCUDRIVE. This site contains everything you need to use or contribute to the Python recreation of LemLib."),
       p("If you are new, start with the introductory tutorials. If you already know what you are doing, jump to the API reference or the LemLib path converter."),
       callout("note", "Port status", "This is an initial hardware-agnostic Python port. The math, path format, and control surfaces are available now; real robot projects should provide motor and sensor adapters for their runtime."),
       code(`from accudrive import chassis, controller_settings, drivetrain, odom_sensors, pose
@@ -36,7 +41,7 @@ print(robot.move_to_point(0, 48))`, "python"),
     title: "About",
     group: "Home",
     blocks: [
-      p("accudrive brings LemLib's autonomous-motion ideas into Python for simulation, education, and Python robotics runtimes."),
+      p("ACCUDRIVE brings LemLib's autonomous-motion ideas into Python for simulation, education, and Python robotics runtimes."),
       p("The project keeps LemLib's familiar concepts: poses, drivetrain settings, pid controllers, odometry sensors, driver-control curves, angular motions, lateral motions, pure pursuit, and motion chaining."),
       p("The package does not assume one hardware platform. Motor groups can be plain callables or objects with move and brake methods, which keeps the core easy to test."),
     ],
@@ -76,7 +81,7 @@ npm run dev`, "bash"),
   },
   tutorial("1 - Getting Started", "1_getting_started", [
     h("Installation"),
-    p("Create a Python project and install accudrive in editable mode. Editable installs are useful while the package is still young because examples and tests can run against your local source tree."),
+    p("Create a Python project and install ACCUDRIVE in editable mode. Editable installs are useful while the package is still young because examples and tests can run against your local source tree."),
     code(`python -m venv .venv
 .venv\\Scripts\\activate
 python -m pip install -e .`, "bash"),
@@ -95,7 +100,7 @@ python -m pip install -e .`, "bash"),
   ]),
   tutorial("2 - Configuration", "2_configuration", [
     h("Introduction"),
-    p("Configuration tells accudrive what your drivetrain looks like, what sensor sources exist, and which pid settings to use."),
+    p("Configuration tells ACCUDRIVE what your drivetrain looks like, what sensor sources exist, and which pid settings to use."),
     h("Motor adapters"),
     p("Motor groups can be callables or objects with move and brake methods. This lets the same control code run in tests, simulators, or a robot runtime."),
     code(`class MotorGroup:
@@ -169,7 +174,7 @@ robot = chassis(drive, lateral_controller, angular_controller, sensors, throttle
   ]),
   tutorial("4 - pid tuning", "4_pid_tuning", [
     h("Introduction"),
-    p("accudrive uses one lateral pid and one angular pid. The tuning order is the same as LemLib: start with kp and kd, add ki only when needed, then tune slew and exit conditions."),
+    p("ACCUDRIVE uses one lateral pid and one angular pid. The tuning order is the same as LemLib: start with kp and kd, add ki only when needed, then tune slew and exit conditions."),
     h("angular pid"),
     code(`angular_controller = controller_settings(
     2,  # kp
@@ -292,6 +297,10 @@ function list(items) {
 
 function callout(kind, title, text) {
   return { type: "callout", kind, title, text };
+}
+
+function logoBlock() {
+  return { type: "logo" };
 }
 
 function tutorial(title, id, blocks) {
@@ -435,7 +444,7 @@ function apiReferenceBlocks() {
     apiEntry("waypoint", "waypoint(x, y, speed)", "One point from a path.jerryio LemLib export.", [param("x", "float", "required", "Waypoint x coordinate."), param("y", "float", "required", "Waypoint y coordinate."), param("speed", "float", "required", "Target path speed at the waypoint.")], "data object"),
     apiEntry("path", "path([waypoint(...), ...])", "List-like path object with export helpers.", [param("waypoints", "list[waypoint]", "required", "Ordered path waypoints.")], "path object"),
     apiEntry("parse_lemlib_path", "parse_lemlib_path(text)", "Parses path.jerryio's LemLib v0.5 text export.", [param("text", "str", "required", "Text containing x, y, speed lines ending at endData.")], "path"),
-    apiEntry("convert_lemlib_to_accudrive", "convert_lemlib_to_accudrive(text, variable_name='path')", "Converts LemLib path text into accudrive path and waypoint code.", [param("text", "str", "required", "LemLib path export text."), param("variable_name", "str", "'path'", "Python variable name for the generated code.")], "str"),
+    apiEntry("convert_lemlib_to_accudrive", "convert_lemlib_to_accudrive(text, variable_name='path')", "Converts LemLib path text into ACCUDRIVE path and waypoint code.", [param("text", "str", "required", "LemLib path export text."), param("variable_name", "str", "'path'", "Python variable name for the generated code.")], "str"),
     apiEntry("gains", "gains(kp=0.0, ki=0.0, kd=0.0)", "PID gain container.", [param("kp", "float", "0.0", "Proportional gain."), param("ki", "float", "0.0", "Integral gain."), param("kd", "float", "0.0", "Derivative gain.")], "data object"),
     apiEntry("pid", "pid(kp, ki=0.0, kd=0.0, windup_range=0.0, sign_flip_reset=False)", "pid controller compatible with LemLib's control style.", [param("kp", "float | gains", "required", "Proportional gain or a gains object."), param("ki", "float", "0.0", "Integral gain."), param("kd", "float", "0.0", "Derivative gain."), param("windup_range", "float", "0.0", "Error range where integral is allowed to accumulate."), param("sign_flip_reset", "bool", "false", "Reset integral when error changes sign.")], "pid object"),
     apiEntry("angular_direction", "angular_direction.cw_clockwise | angular_direction.ccw_counterclockwise", "Optional direction constraint for angle_error.", [], "enum"),
@@ -635,13 +644,13 @@ function App() {
         <button className="icon-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle contents">
           <Menu size={18} />
         </button>
-        <span>accudrive documentation</span>
+        <span>ACCUDRIVE documentation</span>
       </header>
       <aside className={`sidebar liquidGL ${menuOpen ? "open" : ""}`}>
         <div className="brand" onClick={() => navigate("index")}>
-          <div className="brand-mark">L</div>
+          <img className="brand-mark" src={ACCUDRIVE_ICON} alt="" aria-hidden="true" />
           <div>
-            <strong>accudrive</strong>
+            <strong>ACCUDRIVE</strong>
             <span>documentation</span>
           </div>
         </div>
@@ -870,6 +879,13 @@ function Blocks({ blocks }) {
     <>
       {blocks.map((block, index) => {
         if (block.type === "p") return <p key={index}>{block.text}</p>;
+        if (block.type === "logo") {
+          return (
+            <figure className="home-logo-panel" key={index}>
+              <img src={ACCUDRIVE_BANNER} alt="ACCUDRIVE logo" className="home-logo" />
+            </figure>
+          );
+        }
         if (block.type === "h") return <h2 id={slug(block.text)} key={index}>{block.text}</h2>;
         if (block.type === "code") {
           return (
@@ -976,7 +992,7 @@ function Converter() {
           <textarea value={input} onChange={(event) => setInput(event.target.value)} spellCheck="false" />
         </label>
         <label>
-          accudrive output
+          ACCUDRIVE output
           <textarea value={output || error} readOnly spellCheck="false" className={error ? "error" : ""} />
         </label>
       </div>

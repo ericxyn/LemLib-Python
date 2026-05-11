@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "accudrive"
 version = "0.1.0"
-description = "accudrive robotics motion-control helpers, LemLib path conversion, and documentation examples."
+description = "ACCUDRIVE robotics motion-control helpers, LemLib path conversion, and documentation examples."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
