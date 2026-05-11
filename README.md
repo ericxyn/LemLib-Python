@@ -1,6 +1,6 @@
 # ACCUDRIVE
 
-accudrive is an early Python recreation of [LemLib](https://github.com/LemLib/LemLib): PID, odometry math, tank-drive motion helpers, driver control curves, pure pursuit path utilities, and a path.jerryio LemLib-format converter.
+ACCUDRIVE is a Python recreation of [LemLib](https://github.com/LemLib/LemLib): PID, odometry math, tank-drive motion helpers, driver control curves, pure pursuit path utilities, and a path.jerryio LemLib-format converter.
 
 This repository is intentionally hardware-agnostic. It exposes the math and control surfaces in Python and lets robot projects provide motor/sensor adapters. That makes it useful for simulation, teaching, testing autonomous routines, and porting LemLib-style snippets before wiring them to a Python robotics runtime.
 
@@ -60,7 +60,7 @@ npm install
 npm run dev
 ```
 
-It recreates the LemLib documentation structure in a Furo/Read the Docs-like light UI with accent color `#73CCFF`, includes all 8 tutorial pages, and adds a browser-based LemLib path converter.
+It has an API Reference and Tutorial Website with documentation structure that is intuitive and easy to read. The site includes all 8 tutorial pages that LemLib features, and adds a browser-based LemLib path converter.
 
 ## Attribution
 
